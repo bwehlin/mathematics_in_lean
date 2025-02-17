@@ -174,7 +174,15 @@ example {c : ℝ} (h : c ≠ 0) : Injective fun x ↦ c * x := by
 variable {α : Type*} {β : Type*} {γ : Type*}
 variable {g : β → γ} {f : α → β}
 
+-- ##################################
+-- ##### HOMEWORK 1 #################
+-- ##################################
+
 example (injg : Injective g) (injf : Injective f) : Injective fun x ↦ g (f x) := by
   sorry
+
+-- ##################################
+-- ##### HOMEWORK 1 END #############
+-- ##################################
 
 end

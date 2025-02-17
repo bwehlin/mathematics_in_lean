@@ -105,8 +105,15 @@ variable (x y z : X)
 #check (dist_comm x y : dist x y = dist y x)
 #check (dist_triangle x y z : dist x z ≤ dist x y + dist y z)
 
+-- ##################################
+-- ##### HOMEWORK 1 #################
+-- ##################################
+
 example (x y : X) : 0 ≤ dist x y := by
   sorry
 
-end
+-- ##################################
+-- ##### HOMEWORK 1 END #############
+-- ##################################
 
+end

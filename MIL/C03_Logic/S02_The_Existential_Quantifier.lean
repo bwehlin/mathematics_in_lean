@@ -162,7 +162,15 @@ open Function
 variable {α : Type*} {β : Type*} {γ : Type*}
 variable {g : β → γ} {f : α → β}
 
+-- ##################################
+-- ##### HOMEWORK 1 #################
+-- ##################################
+
 example (surjg : Surjective g) (surjf : Surjective f) : Surjective fun x ↦ g (f x) := by
   sorry
+
+-- ##################################
+-- ##### HOMEWORK 1 END #############
+-- ##################################
 
 end

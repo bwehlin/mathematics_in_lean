@@ -38,10 +38,38 @@ example : min a b = min b a := by
     apply min_le_right
     apply min_le_left
 
+
+#check (le_max_left a b : a ≤  max a b)
+#check (le_max_right a b : b ≤ max a b)
+#check (max_le : c ≥  a → c ≥  b → max a b ≤ c)
+
 example : max a b = max b a := by
-  sorry
+  apply ge_antisymm
+  -- repeat
+  apply max_le
+  apply le_max_right
+  apply le_max_left
+  apply max_le
+  apply le_max_right
+  apply le_max_left
+
+#check (min_le_left a b : min a b ≤ a)
+#check (min_le_right a b : min a b ≤ b)
+#check (le_min : c ≤ a → c ≤ b → c ≤ min a b)
+
 example : min (min a b) c = min a (min b c) := by
-  sorry
+  apply le_antisymm
+  · show min (min a b) c ≤ min a (min b c)
+    apply le_min
+    · apply le_trans
+      apply min_le_left
+      apply min_le_left
+
+
+
+
+
+
 theorem aux : min a b + c ≤ min (a + c) (b + c) := by
   sorry
 example : min a b + c = min (a + c) (b + c) := by
@@ -77,8 +105,15 @@ variable (m n : ℕ)
 #check (Nat.lcm_zero_right n : Nat.lcm n 0 = 0)
 #check (Nat.lcm_zero_left n : Nat.lcm 0 n = 0)
 
+-- ##################################
+-- ##### HOMEWORK 1 #################
+-- ##################################
+
 example : Nat.gcd m n = Nat.gcd n m := by
   sorry
+
+-- ##################################
+-- ##### HOMEWORK 1 END #############
+-- ##################################
+
 end
-
-

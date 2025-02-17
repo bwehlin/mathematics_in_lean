@@ -76,6 +76,10 @@ theorem convergesTo_mul {s t : ℕ → ℝ} {a b : ℝ}
   · ext; ring
   ring
 
+-- ##################################
+-- ##### HOMEWORK 1 #################
+-- ##################################
+
 theorem convergesTo_unique {s : ℕ → ℝ} {a b : ℝ}
       (sa : ConvergesTo s a) (sb : ConvergesTo s b) :
     a = b := by
@@ -93,6 +97,10 @@ theorem convergesTo_unique {s : ℕ → ℝ} {a b : ℝ}
   have : |a - b| < |a - b| := by sorry
   exact lt_irrefl _ this
 
+-- ##################################
+-- ##### HOMEWORK 1 END #############
+-- ##################################
+
 section
 variable {α : Type*} [LinearOrder α]
 
@@ -100,4 +108,3 @@ def ConvergesTo' (s : α → ℝ) (a : ℝ) :=
   ∀ ε > 0, ∃ N, ∀ n ≥ N, |s n - a| < ε
 
 end
-

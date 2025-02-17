@@ -95,8 +95,16 @@ end
 section
 variable (f : ℝ → ℝ)
 
+-- ##################################
+-- ##### HOMEWORK 1 #################
+-- ##################################
+
 example (h : ¬FnHasUb f) : ∀ a, ∃ x, f x > a := by
   sorry
+
+-- ##################################
+-- ##### HOMEWORK 1 END #############
+-- ##################################
 
 example (h : ¬∀ a, ∃ x, f x > a) : FnHasUb f := by
   push_neg at h
@@ -136,4 +144,3 @@ example (h : 0 < 0) : a > 37 := by
   contradiction
 
 end
-

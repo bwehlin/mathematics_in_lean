@@ -36,7 +36,16 @@ variable (x y z : α)
 #check (sup_le : x ≤ z → y ≤ z → x ⊔ y ≤ z)
 
 example : x ⊓ y = y ⊓ x := by
-  sorry
+  apply le_antisymm
+  · show x ⊓ y ≤ y ⊓ x
+    apply le_inf
+    · apply inf_le_right
+    apply inf_le_left
+  · show y ⊓ x ≤ x ⊓ y
+    apply le_inf
+    · apply inf_le_right
+    apply inf_le_left
+
 
 example : x ⊓ y ⊓ z = x ⊓ (y ⊓ z) := by
   sorry
@@ -48,7 +57,11 @@ example : x ⊔ y ⊔ z = x ⊔ (y ⊔ z) := by
   sorry
 
 theorem absorb1 : x ⊓ (x ⊔ y) = x := by
-  sorry
+  apply le_antisymm
+  apply inf_le_left
+  apply le_inf
+  rfl
+  apply le_sup_left
 
 theorem absorb2 : x ⊔ x ⊓ y = x := by
   sorry
@@ -69,8 +82,12 @@ section
 variable {α : Type*} [Lattice α]
 variable (a b c : α)
 
+--#check (inf_sup_self a b : a ⊓ (a ⊔ b) = a)
+--#check (sup_inf_self a b : a ⊔ a ⊓ b = a)
+
 example (h : ∀ x y z : α, x ⊓ (y ⊔ z) = x ⊓ y ⊔ x ⊓ z) : a ⊔ b ⊓ c = (a ⊔ b) ⊓ (a ⊔ c) := by
   sorry
+
 
 example (h : ∀ x y z : α, x ⊔ y ⊓ z = (x ⊔ y) ⊓ (x ⊔ z)) : a ⊓ (b ⊔ c) = a ⊓ b ⊔ a ⊓ c := by
   sorry
@@ -110,7 +127,15 @@ variable (x y z : X)
 -- ##################################
 
 example (x y : X) : 0 ≤ dist x y := by
-  sorry
+
+  have h : 0 ≤ 2 * dist x y := calc
+    0 = dist x x := by rw[dist_self]
+    _ ≤ dist x y + dist y x := by apply dist_triangle
+    _ ≤ dist x y + dist x y := by rw[dist_comm]
+    _ ≤ 2 * dist x y := by rw[two_mul]
+
+  linarith
+
 
 -- ##################################
 -- ##### HOMEWORK 1 END #############

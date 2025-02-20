@@ -100,7 +100,8 @@ variable (f : ℝ → ℝ)
 -- ##################################
 
 example (h : ¬FnHasUb f) : ∀ a, ∃ x, f x > a := by
-  sorry
+  contrapose! h
+  exact h
 
 -- ##################################
 -- ##### HOMEWORK 1 END #############

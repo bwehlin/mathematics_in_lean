@@ -128,11 +128,20 @@ example {x y : ℝ} : x ≤ y ∧ ¬y ≤ x ↔ x ≤ y ∧ x ≠ y := by
 
 
 theorem aux {x y : ℝ} (h : x ^ 2 + y ^ 2 = 0) : x = 0 :=
-  have h' : x ^ 2 = 0 := by sorry
+  have h' : x ^ 2 = 0 := by linarith [pow_two_nonneg x, pow_two_nonneg y]
   pow_eq_zero h'
 
-example (x y : ℝ) : x ^ 2 + y ^ 2 = 0 ↔ x = 0 ∧ y = 0 :=
-  sorry
+example (x y : ℝ) : x ^ 2 + y ^ 2 = 0 ↔ x = 0 ∧ y = 0 := by
+  constructor
+  intro h
+  · constructor
+    · apply aux
+      apply h
+    · rw [add_comm] at h
+      apply aux
+      apply h
+  · intro h
+    rw [h.left, h.right, pow_two, mul_zero, add_zero]
 
 section
 

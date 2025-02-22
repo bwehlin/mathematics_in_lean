@@ -128,19 +128,3 @@ def ConvergesTo' (s : α → ℝ) (a : ℝ) :=
   ∀ ε > 0, ∃ N, ∀ n ≥ N, |s n - a| < ε
 
 end
-
-section
-
-variable (a : ℝ)
-
-example : True := by
-  let b := 2 * a
-  have b + b = 2 * a + 2 * a := by unfold b
-  -- error: invalid pattern
-  -- error tactic 'unfold' failed to unfold 'b' at ?m.23037
-
-example : True := by
-  let b := 2 * a
-  have b + b = 2 * a + 2 * a := by unfold_let b -- Warning: The `unfold_let` tactic is deprecated. Please use `unfold` instead.
-
-end

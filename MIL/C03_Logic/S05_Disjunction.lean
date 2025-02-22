@@ -111,7 +111,14 @@ example (h : x ^ 2 = 1) : x = 1 ∨ x = -1 := by
 -- ##################################
 
 example (h : x ^ 2 = y ^ 2) : x = y ∨ x = -y := by
-  sorry
+
+  have h': x ^ 2 - y ^ 2 = 0 := sub_eq_zero_of_eq h
+  rw [sq_sub_sq] at h'
+  rcases eq_zero_or_eq_zero_of_mul_eq_zero h' with hp | hm
+  · right
+    exact add_eq_zero_iff_eq_neg.mp hp
+  · left
+    exact sub_eq_zero.mp hm
 
 -- ##################################
 -- ##### HOMEWORK 1 END #############

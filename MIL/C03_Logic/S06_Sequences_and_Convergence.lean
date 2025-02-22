@@ -80,13 +80,6 @@ theorem convergesTo_mul {s t : ℕ → ℝ} {a b : ℝ}
 -- ##### HOMEWORK 1 #################
 -- ##################################
 
-section
-variable (a b c : ℝ)
-#check (le_max_left a b : a ≤  max a b)
-#check (le_max_right a b : b ≤ max a b)
-#check (max_le : c ≥  a → c ≥  b → max a b ≤ c)
-end
-
 theorem convergesTo_unique {s : ℕ → ℝ} {a b : ℝ}
       (sa : ConvergesTo s a) (sb : ConvergesTo s b) :
     a = b := by
@@ -107,20 +100,24 @@ theorem convergesTo_unique {s : ℕ → ℝ} {a b : ℝ}
   have absb : |s N - b| < ε := by
     apply hNb
     apply le_max_right
-  have : |a - b| < |a - b| := by
-    have h: a - b = (a - s N) + (s N - b) := by
+
+  have add_sub_sN: a - b = (a - s N) + (s N - b) := by
       rw [← add_zero a, ← sub_self (s N)]
       linarith
-    nth_rw 2 [h]
 
-    have h': |(a - s N) + (s N - b)| < |a-b| := calc
-      |(a - s N) + (s N - b)| ≤ |(a - s N)| + |(s N - b)| := by apply abs_add
-      _ = |s N - a| + |s N - b| := by rw[abs_sub_comm]
-      _ < 2 * ε := by linarith
-      _ = 2 * |a-b|/2 := by unfold ε
+  have : |a - b| < |a - b| := calc
+    |a - b| = |(a - s N) + (s N - b)| :=  by rw[add_sub_sN]
+    _ ≤ |a-s N| + |s N - b| := by apply abs_add
+    _ = |s N - a| + |s N - b| := by rw[abs_sub_comm]
+    _ < ε + ε := by apply add_lt_add absa absb
+    -- _ = |a-b|/2 + |a-b|/2 := by rw[ε] This does not work, see below
+    _ = |a-b| := by norm_num[ε] -- but |a-b|/2+|a-b|/2 is not OK when using norm_num??
 
-
-
+  -- It somehow seems incredibly difficult to just go from ε to |a-b|/2 in a calc step.
+  -- Why can't I just rw[ε] or something like that? We literally have 'let ε := |a-b|/2'.
+  -- The closest I got was 'unfold' but just having 'unfold' Lean is expecting something
+  -- after, and apparently this thing cannot be ε. For some reason it works with
+  -- norm_num[ε], but I can't reason as to why.
 
   exact lt_irrefl _ this
 

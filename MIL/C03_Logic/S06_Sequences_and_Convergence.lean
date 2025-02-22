@@ -110,14 +110,10 @@ theorem convergesTo_unique {s : ℕ → ℝ} {a b : ℝ}
     _ ≤ |a-s N| + |s N - b| := by apply abs_add
     _ = |s N - a| + |s N - b| := by rw[abs_sub_comm]
     _ < ε + ε := by apply add_lt_add absa absb
-    -- _ = |a-b|/2 + |a-b|/2 := by rw[ε] This does not work, see below
-    _ = |a-b| := by norm_num[ε] -- but |a-b|/2+|a-b|/2 is not OK when using norm_num??
+    _ = |a-b| := by unfold ε; linarith
 
-  -- It somehow seems incredibly difficult to just go from ε to |a-b|/2 in a calc step.
-  -- Why can't I just rw[ε] or something like that? We literally have 'let ε := |a-b|/2'.
-  -- The closest I got was 'unfold' but just having 'unfold' Lean is expecting something
-  -- after, and apparently this thing cannot be ε. For some reason it works with
-  -- norm_num[ε], but I can't reason as to why.
+  -- Note: I had to use the Zulip chat to understand why my 'unfold' didn't work here at first (it was actually working, but the next step, linarith, was missing to close the calc line).
+  -- See: https://leanprover.zulipchat.com/#narrow/channel/270676-lean4/topic/.E2.9C.94.20How.20to.20unfold.20a.20.60let.60.20definition.3F
 
   exact lt_irrefl _ this
 
@@ -130,5 +126,21 @@ variable {α : Type*} [LinearOrder α]
 
 def ConvergesTo' (s : α → ℝ) (a : ℝ) :=
   ∀ ε > 0, ∃ N, ∀ n ≥ N, |s n - a| < ε
+
+end
+
+section
+
+variable (a : ℝ)
+
+example : True := by
+  let b := 2 * a
+  have b + b = 2 * a + 2 * a := by unfold b
+  -- error: invalid pattern
+  -- error tactic 'unfold' failed to unfold 'b' at ?m.23037
+
+example : True := by
+  let b := 2 * a
+  have b + b = 2 * a + 2 * a := by unfold_let b -- Warning: The `unfold_let` tactic is deprecated. Please use `unfold` instead.
 
 end

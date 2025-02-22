@@ -80,11 +80,20 @@ theorem convergesTo_mul {s t : ℕ → ℝ} {a b : ℝ}
 -- ##### HOMEWORK 1 #################
 -- ##################################
 
+section
+variable (a b c : ℝ)
+#check (le_max_left a b : a ≤  max a b)
+#check (le_max_right a b : b ≤ max a b)
+#check (max_le : c ≥  a → c ≥  b → max a b ≤ c)
+end
+
 theorem convergesTo_unique {s : ℕ → ℝ} {a b : ℝ}
       (sa : ConvergesTo s a) (sb : ConvergesTo s b) :
     a = b := by
   by_contra abne
-  have : |a - b| > 0 := by sorry
+  have : |a - b| > 0 := by
+    contrapose! abne
+    exact eq_of_abs_sub_nonpos abne
   let ε := |a - b| / 2
   have εpos : ε > 0 := by
     change |a - b| / 2 > 0
@@ -92,9 +101,27 @@ theorem convergesTo_unique {s : ℕ → ℝ} {a b : ℝ}
   rcases sa ε εpos with ⟨Na, hNa⟩
   rcases sb ε εpos with ⟨Nb, hNb⟩
   let N := max Na Nb
-  have absa : |s N - a| < ε := by sorry
-  have absb : |s N - b| < ε := by sorry
-  have : |a - b| < |a - b| := by sorry
+  have absa : |s N - a| < ε := by
+    apply hNa
+    apply le_max_left
+  have absb : |s N - b| < ε := by
+    apply hNb
+    apply le_max_right
+  have : |a - b| < |a - b| := by
+    have h: a - b = (a - s N) + (s N - b) := by
+      rw [← add_zero a, ← sub_self (s N)]
+      linarith
+    nth_rw 2 [h]
+
+    have h': |(a - s N) + (s N - b)| < |a-b| := calc
+      |(a - s N) + (s N - b)| ≤ |(a - s N)| + |(s N - b)| := by apply abs_add
+      _ = |s N - a| + |s N - b| := by rw[abs_sub_comm]
+      _ < 2 * ε := by linarith
+      _ = 2 * |a-b|/2 := by unfold ε
+
+
+
+
   exact lt_irrefl _ this
 
 -- ##################################

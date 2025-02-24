@@ -180,9 +180,6 @@ variable {g : β → γ} {f : α → β}
 -- ##################################
 
 example (surjg : Surjective g) (surjf : Surjective f) : Surjective fun x ↦ g (f x) := by
-  -- intro x
-  -- dsimp
-
   intro x
   rcases surjg x with ⟨b, hb⟩
   rcases surjf b with ⟨a, ha⟩

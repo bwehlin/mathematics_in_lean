@@ -175,6 +175,10 @@ section
 variable {α : Type*}
 open Function
 
+-- ##################################
+-- ##### HOMEWORK 2 #################
+-- ##################################
+
 theorem Cantor : ∀ f : α → Set α, ¬Surjective f := by
   intro f surjf
   let S := { i | i ∉ f i }
@@ -191,3 +195,7 @@ theorem Cantor : ∀ f : α → Set α, ¬Surjective f := by
 
 -- COMMENTS: TODO: improve this
 end
+
+-- ##################################
+-- ##### HOMEWORK 2 END #############
+-- ##################################

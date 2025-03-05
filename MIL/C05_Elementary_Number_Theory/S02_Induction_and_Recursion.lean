@@ -98,9 +98,19 @@ theorem sum_id (n : ℕ) : ∑ i in range (n + 1), i = n * (n + 1) / 2 := by
   rw [Finset.sum_range_succ, mul_add 2, ← ih]
   ring
 
+-- ##################################
+-- ##### HOMEWORK 2 #################
+-- ##################################
+
+-- Not in the book: define the Fibonacci sequence as a function "fib : ℕ → ℕ" and run “#eval fib 10”, “#eval fib 1000” to check it computes
+
 theorem sum_sqr (n : ℕ) : ∑ i in range (n + 1), i ^ 2 = n * (n + 1) * (2 * n + 1) / 6 := by
   sorry
 end
+
+-- ##################################
+-- ##### HOMEWORK 2 #################
+-- ##################################
 
 inductive MyNat where
   | zero : MyNat

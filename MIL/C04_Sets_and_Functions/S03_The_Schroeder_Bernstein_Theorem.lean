@@ -22,6 +22,10 @@ def sbSet :=
 def sbFun (x : α) : β :=
   if x ∈ sbSet f g then f x else invFun g x
 
+-- ##################################
+-- ##### HOMEWORK 2 #################
+-- ##################################
+
 theorem sb_right_inv {x : α} (hx : x ∉ sbSet f g) : g (invFun g x) = x := by
   have : x ∈ g '' univ := by
     contrapose! hx
@@ -81,6 +85,10 @@ theorem sb_surjective (hg : Injective g) : Surjective (sbFun f g) := by
   sorry
 
 end
+
+-- ##################################
+-- ##### HOMEWORK 2 END #############
+-- ##################################
 
 theorem schroeder_bernstein {f : α → β} {g : β → α} (hf : Injective f) (hg : Injective g) :
     ∃ h : α → β, Bijective h :=

@@ -103,6 +103,10 @@ theorem _root_.Nat.Prime.eq_of_dvd_of_prime {p q : ℕ}
     p = q := by
   sorry
 
+-- ##################################
+-- ##### HOMEWORK 2 #################
+-- ##################################
+
 theorem mem_of_dvd_prod_primes {s : Finset ℕ} {p : ℕ} (prime_p : p.Prime) :
     (∀ n ∈ s, Nat.Prime n) → (p ∣ ∏ n in s, n) → p ∈ s := by
   intro h₀ h₁
@@ -112,8 +116,19 @@ theorem mem_of_dvd_prod_primes {s : Finset ℕ} {p : ℕ} (prime_p : p.Prime) :
   simp [Finset.prod_insert ans, prime_p.dvd_mul] at h₀ h₁
   rw [mem_insert]
   sorry
+
+-- ##################################
+-- ##### HOMEWORK 2 END #############
+-- ##################################
+
 example (s : Finset ℕ) (x : ℕ) : x ∈ s.filter Nat.Prime ↔ x ∈ s ∧ x.Prime :=
   mem_filter
+
+-- ##################################
+-- ##### HOMEWORK 2 #################
+-- ##################################
+
+-- (extra credit: reorganise a little to avoid proof by contradiction — notice this actually makes it simpler!)
 
 theorem primes_infinite' : ∀ s : Finset Nat, ∃ p, Nat.Prime p ∧ p ∉ s := by
   intro s
@@ -134,6 +149,11 @@ theorem primes_infinite' : ∀ s : Finset Nat, ∃ p, Nat.Prime p ∧ p ∉ s :=
     simp
   show False
   sorry
+
+-- ##################################
+-- ##### HOMEWORK 2 END #############
+-- ##################################
+
 theorem bounded_of_ex_finset (Q : ℕ → Prop) :
     (∃ s : Finset ℕ, ∀ k, Q k → k ∈ s) → ∃ n, ∀ k, Q k → k < n := by
   rintro ⟨s, hs⟩
@@ -224,4 +244,3 @@ theorem primes_mod_4_eq_3_infinite : ∀ n, ∃ p > n, Nat.Prime p ∧ p % 4 = 3
   have : p = 3 := by
     sorry
   contradiction
-

@@ -53,9 +53,18 @@ def permGroup {α : Type*} : Group₁ (Equiv.Perm α)
   mul_one := Equiv.refl_trans
   inv_mul_cancel := Equiv.self_trans_symm
 
+-- ##################################
+-- ##### HOMEWORK 2 #################
+-- ##################################
+
 structure AddGroup₁ (α : Type*) where
   (add : α → α → α)
   -- fill in the rest
+
+-- ##################################
+-- ##### HOMEWORK 2 END #############
+-- ##################################
+
 @[ext]
 structure Point where
   x : ℝ
@@ -71,7 +80,15 @@ def neg (a : Point) : Point := sorry
 
 def zero : Point := sorry
 
+-- ##################################
+-- ##### HOMEWORK 2 #################
+-- ##################################
+
 def addGroupPoint : AddGroup₁ Point := sorry
+
+-- ##################################
+-- ##### HOMEWORK 2 END #############
+-- ##################################
 
 end Point
 

@@ -26,16 +26,28 @@ def sbFun (x : α) : β :=
 -- ##### HOMEWORK 2 #################
 -- ##################################
 
+#check invFun
+
 theorem sb_right_inv {x : α} (hx : x ∉ sbSet f g) : g (invFun g x) = x := by
   have : x ∈ g '' univ := by
     contrapose! hx
     rw [sbSet, mem_iUnion]
     use 0
     rw [sbAux, mem_diff]
-    sorry
+    -- > HW
+    constructor
+    · trivial
+    · exact hx
+    -- < HW
   have : ∃ y, g y = x := by
-    sorry
-  sorry
+    -- > HW
+    rcases this with ⟨a, _, _⟩
+    use a
+    -- < HW
+  -- > HW
+  apply invFun_eq
+  apply this
+  -- < HW
 
 theorem sb_injective (hf : Injective f) : Injective (sbFun f g) := by
   set A := sbSet f g with A_def
@@ -54,15 +66,31 @@ theorem sb_injective (hf : Injective f) : Injective (sbFun f g) := by
       rw [if_pos x₁A, if_neg x₂nA] at hxeq
       rw [A_def, sbSet, mem_iUnion] at x₁A
       have x₂eq : x₂ = g (f x₁) := by
-        sorry
+        -- > HW
+        rw [hxeq]
+        unfold A at x₂nA -- not necessary bu easier to understand
+        symm
+        apply sb_right_inv f g x₂nA
+        -- < HW
       rcases x₁A with ⟨n, hn⟩
       rw [A_def, sbSet, mem_iUnion]
       use n + 1
       simp [sbAux]
       exact ⟨x₁, hn, x₂eq.symm⟩
-    sorry
+    -- > HW
+    simp [x₁A, x₂A] at hxeq
+    apply hf
+    exact hxeq
+    -- < HW
   push_neg at xA
-  sorry
+  -- > HW
+  rcases xA with ⟨x₁nA, x₂nA⟩
+  simp [x₁nA, x₂nA] at hxeq
+  have x₁g : x₁ = g (invFun g x₁) := by symm; apply sb_right_inv f g x₁nA
+  have x₂g : x₂ = g (invFun g x₂) := by symm; apply sb_right_inv f g x₂nA
+
+  rw [x₁g, x₂g, hxeq]
+  -- < HW
 
 theorem sb_surjective (hg : Injective g) : Surjective (sbFun f g) := by
   set A := sbSet f g with A_def
@@ -82,7 +110,16 @@ theorem sb_surjective (hg : Injective g) : Surjective (sbFun f g) := by
     rw [h_def, sbFun, if_pos this]
     apply hg hx
 
-  sorry
+  -- > HW
+  · rw [h_def]
+    rw [A_def] at gyA
+    use g y
+    have : g (invFun g (g y)) = g y :=  sb_right_inv f g gyA
+    apply hg at this
+    symm at this
+    simp [sbFun, gyA]
+    apply leftInverse_invFun hg
+  -- < HW
 
 end
 

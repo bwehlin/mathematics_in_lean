@@ -114,9 +114,6 @@ theorem sb_surjective (hg : Injective g) : Surjective (sbFun f g) := by
   · rw [h_def]
     rw [A_def] at gyA
     use g y
-    have : g (invFun g (g y)) = g y :=  sb_right_inv f g gyA
-    apply hg at this
-    symm at this
     simp [sbFun, gyA]
     apply leftInverse_invFun hg
   -- < HW

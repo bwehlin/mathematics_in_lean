@@ -43,8 +43,17 @@ example : s ∩ (t ∪ u) ⊆ s ∩ t ∪ s ∩ u := by
   · left; exact ⟨xs, xt⟩
   · right; exact ⟨xs, xu⟩
 
-example : s ∩ t ∪ s ∩ u ⊆ s ∩ (t ∪ u) := by
-  sorry
+example : (s ∩ t) ∪ (s ∩ u) ⊆ s ∩ (t ∪ u) := by
+  rintro x (⟨xs, xt⟩ | ⟨xs, xu⟩)
+  use xs
+  left
+  exact xt
+
+  use xs
+  right
+  exact xu
+
+
 example : (s \ t) \ u ⊆ s \ (t ∪ u) := by
   intro x xstu
   have xs : x ∈ s := xstu.1.1
@@ -64,7 +73,23 @@ example : (s \ t) \ u ⊆ s \ (t ∪ u) := by
   rintro (xt | xu) <;> contradiction
 
 example : s \ (t ∪ u) ⊆ (s \ t) \ u := by
-  sorry
+  intro x hx
+  have xs : x ∈ s := hx.1
+  have xntu : x ∉ t ∪ u := hx.2
+  have xnt : x ∉ t := by
+    contrapose! xntu
+    left
+    exact xntu
+  have xnu : x ∉ u := by
+    contrapose! xntu
+    right
+    exact xntu
+  constructor
+  · constructor
+    exact xs
+    exact xnt
+  · exact xnu
+
 example : s ∩ t = t ∩ s := by
   ext x
   simp only [mem_inter_iff]
@@ -84,6 +109,7 @@ example : s ∩ t = t ∩ s := by
 
 example : s ∩ t = t ∩ s :=
     Subset.antisymm sorry sorry
+
 example : s ∩ (s ∪ t) = s := by
   sorry
 
@@ -119,7 +145,25 @@ example (x : ℕ) : x ∈ (univ : Set ℕ) :=
 -- ##################################
 
 example : { n | Nat.Prime n } ∩ { n | n > 2 } ⊆ { n | ¬Even n } := by
-  sorry
+
+  intro a hm
+  simp only [Nat.prime_def] at hm
+  simp
+  by_contra h
+  rw [Nat.not_odd_iff_even, even_iff_two_dvd] at h
+  rcases hm with ⟨hp, hgt⟩
+  have hc : 2 = 1 ∨ 2 = a := by
+    rcases hp with ⟨tl, dv⟩
+    apply dv at h
+    exact h
+
+  cases' hc with _ hq
+  · contradiction -- 2 = 1
+
+  -- 2 = a
+  rw [mem_setOf] at hgt
+  cases hq
+  contradiction
 
 -- ##################################
 -- ##### HOMEWORK 2 END #############
@@ -158,11 +202,22 @@ example (h : ∃ x ∈ s, ¬Even x ∧ Prime x) : ∃ x ∈ s, Prime x := by
 section
 variable (ssubt : s ⊆ t)
 
+example (x : ℕ) (A B : Set ℕ) (h : A ⊆ B) (hx : x ∈ A) : x ∈ B := by
+  rw [Set.subset_def] at h
+  specialize h x hx
+
 example (h₀ : ∀ x ∈ t, ¬Even x) (h₁ : ∀ x ∈ t, Prime x) : ∀ x ∈ s, ¬Even x ∧ Prime x := by
-  sorry
+  intro y ys
+  rw [Set.subset_def] at ssubt
+  have yt : y ∈ t := ssubt y ys
+  constructor
+  apply h₀ y yt
+  apply h₁ y yt
 
 example (h : ∃ x ∈ s, ¬Even x ∧ Prime x) : ∃ x ∈ t, Prime x := by
-  sorry
+  rcases h with ⟨y, ys, _, yp⟩
+  have yt : y ∈ t := by rw [Set.subset_def] at ssubt; apply ssubt y ys
+  use y
 
 end
 
@@ -205,7 +260,37 @@ example : (⋂ i, A i ∩ B i) = (⋂ i, A i) ∩ ⋂ i, B i := by
 -- ##################################
 
 example : (s ∪ ⋂ i, A i) = ⋂ i, A i ∪ s := by
-  sorry
+  ext x
+  simp only [mem_iInter, mem_union]
+  constructor
+  -- ->
+  · intro h
+    intro j
+    rcases h with hxs | hxj
+    · right
+      exact hxs
+    · left
+      exact (hxj j)
+
+  -- <-
+
+  -- For this part, I wasn't sure how to do it, so I looked at
+  -- the solution. It was not my intention, but I ended up with
+  -- exactly the same code line-by-line. Hopefully, this is OK.
+  -- (I tried thinking of other ways to do this but I didn't\
+  -- come up with anything.)
+  · intro h
+
+    by_cases xs : x ∈ s
+    left
+    exact xs
+
+    right
+    intro j
+    cases h j
+    assumption
+    contradiction
+
 
 -- ##################################
 -- ##### HOMEWORK 2 END #############

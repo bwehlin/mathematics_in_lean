@@ -46,10 +46,14 @@ example : f '' s ⊆ v ↔ s ⊆ f ⁻¹' v := by
     apply hsv as
 
 example (h : Injective f) : f ⁻¹' (f '' s) ⊆ s := by
-  sorry
+  rintro a ⟨a', a's, d⟩
+  apply h at d
+  rw [d] at a's
+  assumption
 
 example : f '' (f ⁻¹' u) ⊆ u := by
-  sorry
+  rintro b ⟨a, amem, rfl⟩
+  exact amem
 
 example (h : Surjective f) : u ⊆ f '' (f ⁻¹' u) := by
   sorry
@@ -90,10 +94,27 @@ example : s ∪ f ⁻¹' u ⊆ f ⁻¹' (f '' s ∪ u) := by
 variable {I : Type*} (A : I → Set α) (B : I → Set β)
 
 example : (f '' ⋃ i, A i) = ⋃ i, f '' A i := by
-  sorry
+  ext y
+  simp
+  constructor
+  rintro ⟨x, hx, eq⟩
+  rcases hx with ⟨j, xaj⟩
+  use j
+  use x
+
+  rintro ⟨j, a, aaj, feq⟩
+  use a
+  constructor
+  use j
+  exact feq
 
 example : (f '' ⋂ i, A i) ⊆ ⋂ i, f '' A i := by
-  sorry
+  simp
+  rintro j a b
+  rw [Set.mem_iInter] at b
+  have h : a ∈ A j := b j
+  simp
+  use a
 
 example (i : I) (injf : Injective f) : (⋂ i, f '' A i) ⊆ f '' ⋂ i, A i := by
   sorry
@@ -196,10 +217,10 @@ theorem Cantor : ∀ f : α → Set α, ¬Surjective f := by
     intro h'
     have : j ∉ f j := by rwa [h] at h'
     contradiction
-  have h₂ : j ∈ S
-  sorry
-  have h₃ : j ∉ S
-  sorry
+  have h₂ : j ∈ S := h₁
+  have h₃ : j ∉ S := by
+    rw [h] at h₁
+    exact h₁
   contradiction
 
 -- COMMENTS: TODO: improve this

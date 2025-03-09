@@ -48,7 +48,12 @@ theorem dvd_fac {i n : ℕ} (ipos : 0 < i) (ile : i ≤ n) : i ∣ fac n := by
 theorem pow_two_le_fac (n : ℕ) : 2 ^ (n - 1) ≤ fac n := by
   rcases n with _ | n
   · simp [fac]
-  sorry
+  induction' n with n hn
+  · simp [fac]
+  simp at *
+  rw [pow_succ', fac]
+  apply Nat.mul_le_mul (by linarith) hn
+
 section
 
 variable {α : Type*} (s : Finset ℕ) (f : ℕ → ℕ) (n : ℕ)
@@ -103,6 +108,14 @@ theorem sum_id (n : ℕ) : ∑ i in range (n + 1), i = n * (n + 1) / 2 := by
 -- ##################################
 
 -- Not in the book: define the Fibonacci sequence as a function "fib : ℕ → ℕ" and run “#eval fib 10”, “#eval fib 1000” to check it computes
+
+def fib : ℕ → ℕ
+  | 0 => 1
+  | 1 => 1
+  | n + 1 => fib n + fib (n - 1)
+
+#eval fib 10
+#eval fib 1000
 
 theorem sum_sqr (n : ℕ) : ∑ i in range (n + 1), i ^ 2 = n * (n + 1) * (2 * n + 1) / 6 := by
   sorry

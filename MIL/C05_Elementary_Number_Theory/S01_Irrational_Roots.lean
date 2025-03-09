@@ -45,6 +45,10 @@ theorem even_of_even_sqr {m : ℕ} (h : 2 ∣ m ^ 2) : 2 ∣ m := by
 example {m : ℕ} (h : 2 ∣ m ^ 2) : 2 ∣ m :=
   Nat.Prime.dvd_of_dvd_pow Nat.prime_two h
 
+example {m : ℕ} (h : Even m) (h': m > 2) : ∃ p q : ℕ, m = p + q ∧ Nat.Prime p ∧ Nat.Prime q := by
+  -- easy exercise
+  sorry
+
 example (a b c : Nat) (h : a * b = a * c) (h' : a ≠ 0) : b = c :=
   -- apply? suggests the following:
   (mul_right_inj' h').mp h
@@ -52,23 +56,67 @@ example (a b c : Nat) (h : a * b = a * c) (h' : a ≠ 0) : b = c :=
 example {m n : ℕ} (coprime_mn : m.Coprime n) : m ^ 2 ≠ 2 * n ^ 2 := by
   intro sqr_eq
   have : 2 ∣ m := by
-    sorry
+    apply even_of_even_sqr
+    rw[sqr_eq]
+    use n^2
   obtain ⟨k, meq⟩ := dvd_iff_exists_eq_mul_left.mp this
   have : 2 * (2 * k ^ 2) = 2 * n ^ 2 := by
     rw [← sqr_eq, meq]
     ring
-  have : 2 * k ^ 2 = n ^ 2 :=
-    sorry
+  have : 2 * k ^ 2 = n ^ 2 := by
+    apply (mul_right_inj' (by norm_num)).mp at this
+    exact this
   have : 2 ∣ n := by
-    sorry
+    apply even_of_even_sqr
+    rw [← this]
+    apply dvd_mul_right
   have : 2 ∣ m.gcd n := by
-    sorry
+    apply Nat.dvd_gcd
+    assumption
+    assumption
   have : 2 ∣ 1 := by
-    sorry
+    rwa [coprime_mn] at this
   norm_num at this
 
 example {m n p : ℕ} (coprime_mn : m.Coprime n) (prime_p : p.Prime) : m ^ 2 ≠ p * n ^ 2 := by
-  sorry
+  intro h
+
+  have pm : p ∣ m := by
+    have : p ∣ m^2 := by use n^2
+    apply Nat.Prime.dvd_of_dvd_pow at this
+    exact this
+    apply prime_p
+
+  have pn : p ∣ n := by
+    rcases pm with ⟨a, ha⟩
+    rw [ha, mul_pow, pow_two, mul_assoc, mul_right_inj'] at h
+    symm at h
+    have : p ∣ n^2 := by use a^2
+    apply Nat.Prime.dvd_of_dvd_pow at this
+    exact this
+    apply prime_p
+
+    · rw [Nat.prime_def] at prime_p
+      rcases prime_p
+      linarith
+
+  rw [Nat.Coprime] at coprime_mn
+  have : p ∣ m.gcd n := by
+    apply Nat.dvd_gcd
+    exact pm
+    exact pn
+
+  rcases this with ⟨w,hw⟩
+  rw [coprime_mn] at hw
+  symm at hw
+  rw [mul_eq_one] at hw
+  rcases hw with ⟨a,b⟩
+  rw [Nat.prime_def] at prime_p
+  rcases prime_p
+  linarith
+
+
+
 #check Nat.primeFactorsList
 #check Nat.prime_of_mem_primeFactorsList
 #check Nat.prod_primeFactorsList
@@ -93,9 +141,10 @@ example {m n p : ℕ} (nnz : n ≠ 0) (prime_p : p.Prime) : m ^ 2 ≠ p * n ^ 2 
   intro sqr_eq
   have nsqr_nez : n ^ 2 ≠ 0 := by simpa
   have eq1 : Nat.factorization (m ^ 2) p = 2 * m.factorization p := by
-    sorry
+    apply factorization_pow'
   have eq2 : (p * n ^ 2).factorization p = 2 * n.factorization p + 1 := by
-    sorry
+    rw [factorization_mul' prime_p.ne_zero nsqr_nez, factorization_pow', prime_p.factorization']
+    linarith
   have : 2 * m.factorization p % 2 = (2 * n.factorization p + 1) % 2 := by
     rw [← eq1, sqr_eq, eq2]
   rw [add_comm, Nat.add_mul_mod_self_left, Nat.mul_mod_right] at this
@@ -107,14 +156,17 @@ example {m n k r : ℕ} (nnz : n ≠ 0) (pow_eq : m ^ k = r * n ^ k) {p : ℕ} :
   · simp
   have npow_nz : n ^ k ≠ 0 := fun npowz ↦ nnz (pow_eq_zero npowz)
   have eq1 : (m ^ k).factorization p = k * m.factorization p := by
-    sorry
+    rw [factorization_pow']
   have eq2 : ((r + 1) * n ^ k).factorization p =
       k * n.factorization p + (r + 1).factorization p := by
-    sorry
+    rw [factorization_mul' (by norm_num) npow_nz, factorization_pow']
+    linarith
   have : r.succ.factorization p = k * m.factorization p - k * n.factorization p := by
     rw [← eq1, pow_eq, eq2, add_comm, Nat.add_sub_cancel]
   rw [this]
-  sorry
+  rw [← factorization_pow', eq1]
+  apply Nat.dvd_sub'
+  use m.factorization p
+  use n.factorization p
 
 #check multiplicity
-

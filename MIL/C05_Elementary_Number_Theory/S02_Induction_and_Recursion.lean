@@ -126,15 +126,15 @@ theorem sum_sqr (n : ℕ) : ∑ i in range (n + 1), i ^ 2 = n * (n + 1) * (2 * n
 
   have : (n+1)^2 = (6 * (n+1)^2)/6 := by norm_num
 
-  have : ∑ i in range (n + 2), i ^ 2 = (2*n^3+9*n^2+13*n+6)/6 := calc
+  have : ∑ i in range (n + 2), i ^ 2 = ((n*(n+1)*(2*n+1)) + (6*(n+1)^2))/6 := calc
     ∑ i in range (n + 2), i ^ 2 = ∑ i in range (n + 1), i ^ 2 + (n+1)^2 := by rw[Finset.sum_range_succ]
     _ = (n*(n+1)*(2*n+1))/6 + (n+1)^2 := by rw [ih]
-    _ = (n*(n+1)*(2*n+1))/6 + (6*(n+1)^2)/6 := by linarith[this]
+    _ = (n*(n+1)*(2*n+1))/6 + (6*(n+1)^2)/6 := by linarith[this] -- somehow rw[this] doesn't work here
     _ = ((n*(n+1)*(2*n+1)) + (6*(n+1)^2))/6 := by rw[Nat.add_div_of_dvd_left]; simp
-    _ = (2*n^3+9*n^2+13*n+6)/6 := by ring_nf
 
   rw[this]
   ring_nf
+
 
 end
 

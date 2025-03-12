@@ -110,7 +110,11 @@ theorem convergesTo_unique {s : ℕ → ℝ} {a b : ℝ}
     _ ≤ |a-s N| + |s N - b| := by apply abs_add
     _ = |s N - a| + |s N - b| := by rw[abs_sub_comm]
     _ < ε + ε := by apply add_lt_add absa absb
-    _ = |a-b| := by unfold ε; linarith
+    _ = |a-b| := by 
+      dsimp [ε]
+      linarith
+    
+    --unfold ε; linarith
 
   -- Note: I had to use the Zulip chat to understand why my 'unfold' didn't work here at first (it was actually working, but the next step, linarith, was missing to close the calc line).
   -- See: https://leanprover.zulipchat.com/#narrow/channel/270676-lean4/topic/.E2.9C.94.20How.20to.20unfold.20a.20.60let.60.20definition.3F

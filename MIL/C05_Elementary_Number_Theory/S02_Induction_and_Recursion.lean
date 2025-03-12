@@ -114,8 +114,8 @@ def fib : ℕ → ℕ
   | 1 => 1
   | n + 1 => fib n + fib (n - 1)
 
-#eval fib 10
---#eval fib 100
+--#eval! fib2 10
+--#eval! fib 100
 --#eval fib 1000
 
 
@@ -124,47 +124,17 @@ theorem sum_sqr (n : ℕ) : ∑ i in range (n + 1), i ^ 2 = n * (n + 1) * (2 * n
   induction' n with n ih
   · simp
 
-  have : ∀ (a b c : ℕ) (h₀ : b ∣ a) (h₁ : b ∣ c), a / b + c / b = (a+c)/b := by
-    rintro a b c h₀ h₁
-    rw [← mul_right_inj b (a/b) (a/c)]
-
-
-
   have : (n+1)^2 = (6 * (n+1)^2)/6 := by norm_num
 
   have : ∑ i in range (n + 2), i ^ 2 = (2*n^3+9*n^2+13*n+6)/6 := calc
     ∑ i in range (n + 2), i ^ 2 = ∑ i in range (n + 1), i ^ 2 + (n+1)^2 := by rw[Finset.sum_range_succ]
     _ = (n*(n+1)*(2*n+1))/6 + (n+1)^2 := by rw [ih]
-    _ = (n*(n+1)*(2*n+1))/6 + (6*(n+1)^2)/6 := by linarith[this] -- somehow rw[this] fails here
-    _ = ((n*(n+1)*(2*n+1)) + (6*(n+1)^2))/6 := by rw[div_add_div_same]
-    _ = (2*n^3+9*n^2+13*n+6)/6 := sorry
+    _ = (n*(n+1)*(2*n+1))/6 + (6*(n+1)^2)/6 := by linarith[this]
+    _ = ((n*(n+1)*(2*n+1)) + (6*(n+1)^2))/6 := by rw[Nat.add_div_of_dvd_left]; simp
+    _ = (2*n^3+9*n^2+13*n+6)/6 := by ring_nf
 
-
-
-
-
-
-  have : (n+1)*(n+2)*(2*(n+1)+1) = (2*n^3+9*n^2+13*n+6) := by ring
-  have rhs : ((n+1)*(n+2)*(2*(n+1)+1))/6 = (2*n^3+9*n^2+13*n+6)/6 := by norm_num[this]
-
-
-  rw [Finset.sum_range_succ, ih]
-
-
-
-  have : (n+1)^2 = 6 * (n+1)^2/6 := by norm_num
-  have : n * (n+1) * (2*n+1)/6 + (n+1)^2 = (n * (n+1) * (2*n+1) + 6 * (n+1)^2)/6 := by
-    rw [this]
-    ring_nf
-
-
-
-
-  rw [ENNReal.div_add_div_same ]
-  rw [Nat.div_add_div_same]
-
-
-
+  rw[this]
+  ring_nf
 
 end
 

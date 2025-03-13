@@ -125,7 +125,20 @@ theorem mem_of_dvd_prod_primes {s : Finset ℕ} {p : ℕ} (prime_p : p.Prime) :
     linarith [prime_p.two_le]
   simp [Finset.prod_insert ans, prime_p.dvd_mul] at h₀ h₁
   rw [mem_insert]
-  sorry
+  -- >> HW
+  rcases h₁ with p_div_a | p_div_prod
+  · -- case: p | a
+    rcases h₀ with ⟨prime_a, _⟩
+    have : p ≠ 1 := by apply (Nat.Prime.ne_one prime_p)
+    apply (Nat.Prime.dvd_iff_eq prime_a this).mp at p_div_a
+    left
+    symm
+    assumption
+  · -- case: p | ∏ n ∈ s, n
+    rcases h₀ with ⟨_, all_prime⟩
+    right
+    apply ih all_prime p_div_prod
+  -- << HW
 
 -- ##################################
 -- ##### HOMEWORK 2 END #############

@@ -45,18 +45,28 @@ theorem exists_prime_factor {n : Nat} (h : 2 ≤ n) : ∃ p : Nat, p.Prime ∧ p
 theorem primes_infinite : ∀ n, ∃ p > n, Nat.Prime p := by
   intro n
   have : 2 ≤ Nat.factorial (n + 1) + 1 := by
-    sorry
+    have : 1 ≤ Nat.factorial (n + 1) := by apply Nat.factorial_pos
+    linarith[this]
   rcases exists_prime_factor this with ⟨p, pp, pdvd⟩
   refine ⟨p, ?_, pp⟩
   show p > n
   by_contra ple
   push_neg at ple
   have : p ∣ Nat.factorial (n + 1) := by
-    sorry
+    apply Nat.dvd_factorial
+    · rw [Nat.prime_def] at pp
+      rcases pp with ⟨lt, rt⟩
+      linarith
+    · linarith
   have : p ∣ 1 := by
-    sorry
+    convert Nat.dvd_sub' pdvd this
+    simp
   show False
-  sorry
+  apply Nat.dvd_one.mp at this
+  rw [Nat.prime_def] at pp
+  rcases pp with ⟨nu, _⟩
+  linarith
+
 open Finset
 
 section

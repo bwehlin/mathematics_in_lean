@@ -99,9 +99,14 @@ section
 variable {α : Type*} [DecidableEq α] (r s t : Finset α)
 
 example : (r ∪ s) ∩ (r ∪ t) = r ∪ s ∩ t := by
-  sorry
+  ext x
+  simp
+  tauto
+
 example : (r \ s) \ t = r \ (s ∪ t) := by
-  sorry
+  ext x
+  simp
+  tauto
 
 end
 
@@ -111,7 +116,12 @@ example (s : Finset ℕ) (n : ℕ) (h : n ∈ s) : n ∣ ∏ i in s, i :=
 theorem _root_.Nat.Prime.eq_of_dvd_of_prime {p q : ℕ}
       (prime_p : Nat.Prime p) (prime_q : Nat.Prime q) (h : p ∣ q) :
     p = q := by
-  sorry
+  have : p = 1 ∨ p = q := by
+    apply (Nat.Prime.eq_one_or_self_of_dvd prime_q p h)
+  rcases this with p_eq_one | p_eq_q
+  have : p ≠ 1 := by apply (Nat.Prime.ne_one prime_p)
+  contradiction
+  assumption
 
 -- ##################################
 -- ##### HOMEWORK 2 #################
@@ -163,15 +173,43 @@ theorem primes_infinite' : ∀ s : Finset Nat, ∃ p, Nat.Prime p ∧ p ∉ s :=
     simp [s'_def]
     apply h
   have : 2 ≤ (∏ i in s', i) + 1 := by
-    sorry
+    -- >> HW
+    -- strategy:  show that s' is nonempty and that each term in the product
+    --            is ≥ 2, then linarith from there.
+    -- (there's probably some slick one-liner to do this...)
+    have : ∀ j ∈ s', 2 ≤ j := by
+      intro j js
+      simp [s'_def] at js
+      obtain ⟨_, j_prime⟩ := js
+      apply Nat.Prime.two_le j_prime
+    have h_card : 2^(s'.card) ≤ ∏ i ∈ s', i := by
+      apply Finset.pow_card_le_prod
+      apply this
+    have : s'.Nonempty := by
+      use 2
+      apply mem_s'.mpr Nat.prime_two
+    have : 2 ≤ 2^(s'.card) := by
+      have : 1 ≤ s'.card := by apply one_le_card.mpr this
+      nth_rw 1 [← pow_one 2]
+      apply pow_le_pow <;>
+      linarith
+    linarith
+    -- << HW
   rcases exists_prime_factor this with ⟨p, pp, pdvd⟩
   have : p ∣ ∏ i in s', i := by
-    sorry
+    -- >> HW
+    apply Finset.dvd_prod_of_mem
+    apply mem_s'.mpr pp
+    -- << HW
   have : p ∣ 1 := by
     convert Nat.dvd_sub' pdvd this
     simp
   show False
-  sorry
+  -- >> HW
+  apply Nat.dvd_one.mp at this -- this gives that p = 1
+  rw [Nat.prime_def] at pp -- this gives that 2 ≤ p
+  linarith
+  -- << HW
 
 -- ##################################
 -- ##### HOMEWORK 2 END #############

@@ -92,7 +92,16 @@ def zero : Point :=
 -- ##### HOMEWORK 2 #################
 -- ##################################
 
-def addGroupPoint : AddGroup₁ Point := sorry
+def addGroupPoint : AddGroup₁ Point
+    where
+  add p q := Point.add p q
+  zero := Point.zero
+  neg := Point.neg
+  add_assoc p q r := by simp[add, add_assoc]
+  add_comm := by simp[add, add_comm]
+  add_zero := by simp[add, zero]
+  zero_add := by simp[zero, add]
+  neg_add_cancel := by simp[neg, add, zero]
 
 -- ##################################
 -- ##### HOMEWORK 2 END #############

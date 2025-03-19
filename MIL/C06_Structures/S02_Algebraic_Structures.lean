@@ -58,8 +58,14 @@ def permGroup {α : Type*} : Group₁ (Equiv.Perm α)
 -- ##################################
 
 structure AddGroup₁ (α : Type*) where
-  (add : α → α → α)
-  -- fill in the rest
+  add : α → α → α
+  zero : α
+  neg : α -> α -- inverse
+  add_assoc : ∀ x y z : α, add (add x y) z = add x (add y z)
+  add_comm : ∀ x y : α, add x y = add y x -- and additive group probably should be commutative
+  add_zero : ∀ x : α, add x zero = x
+  zero_add : ∀ x : α, add zero x = x
+  neg_add_cancel : ∀ x : α, add (neg x) x = zero
 
 -- ##################################
 -- ##### HOMEWORK 2 END #############

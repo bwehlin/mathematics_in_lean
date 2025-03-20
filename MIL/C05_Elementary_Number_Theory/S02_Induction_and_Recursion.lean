@@ -117,18 +117,16 @@ def fib : ℕ → ℕ
 
 -- This does n=millions
 def fib2 : Nat := Id.run do
-  let mut a := 1
-  let mut b := 1
-  let mut x := 1
+  let mut x₂ := 1
+  let mut x₁ := 1
+  let mut x₀ := 1
 
-  let (xs : List ℕ ) := List.range (n - 2)
+  for _ in List.range (n - 2) do
+    x₀ := x₁ + x₂
+    x₂ := x₁
+    x₁ := x₀
 
-  for _ in xs do
-    x := a + b
-    b := a
-    a := x
-
-  return x
+  return x₀
 
 #eval fib2 1000
 --#eval Nat.log 10 (fib2 10000000) -- 2,089,876 (after several minutes)

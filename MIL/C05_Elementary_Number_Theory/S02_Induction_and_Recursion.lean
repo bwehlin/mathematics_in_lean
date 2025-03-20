@@ -109,15 +109,29 @@ theorem sum_id (n : ℕ) : ∑ i in range (n + 1), i = n * (n + 1) / 2 := by
 
 -- Not in the book: define the Fibonacci sequence as a function "fib : ℕ → ℕ" and run “#eval fib 10”, “#eval fib 1000” to check it computes
 
+-- This works for small n (starts to struggle around n=30)
 def fib : ℕ → ℕ
   | 0 => 1
   | 1 => 1
   | n + 1 => fib n + fib (n - 1)
 
---#eval! fib2 10
---#eval! fib 100
---#eval fib 1000
+-- This does n=millions
+def fib2 : Nat := Id.run do
+  let mut a := 1
+  let mut b := 1
+  let mut x := 1
 
+  let (xs : List ℕ ) := List.range (n - 2)
+
+  for _ in xs do
+    x := a + b
+    b := a
+    a := x
+
+  return x
+
+#eval fib2 1000
+--#eval Nat.log 10 (fib2 10000000) -- 2,089,876 (after several minutes)
 
 
 theorem sum_sqr (n : ℕ) : ∑ i in range (n + 1), i ^ 2 = n * (n + 1) * (2 * n + 1) / 6 := by

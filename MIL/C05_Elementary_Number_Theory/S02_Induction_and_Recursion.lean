@@ -115,6 +115,7 @@ def fib : ℕ → ℕ
   | 1 => 1
   | n + 1 => fib n + fib (n - 1)
 
+#eval fib 20
 -- This does n=millions
 def fib2 : Nat := Id.run do
   let mut x₂ := 1
@@ -130,7 +131,10 @@ def fib2 : Nat := Id.run do
 
 #eval fib2 1000
 --#eval Nat.log 10 (fib2 10000000) -- 2,089,876 (after several minutes)
+#check Nat.fib
 
+#time #eval fib2 1000000
+#time #eval Nat.fib 1000000
 
 theorem sum_sqr (n : ℕ) : ∑ i in range (n + 1), i ^ 2 = n * (n + 1) * (2 * n + 1) / 6 := by
   induction' n with n ih
@@ -142,7 +146,7 @@ theorem sum_sqr (n : ℕ) : ∑ i in range (n + 1), i ^ 2 = n * (n + 1) * (2 * n
     ∑ i in range (n + 2), i ^ 2 = ∑ i in range (n + 1), i ^ 2 + (n+1)^2 := by rw[Finset.sum_range_succ]
     _ = (n*(n+1)*(2*n+1))/6 + (n+1)^2 := by rw [ih]
     _ = (n*(n+1)*(2*n+1))/6 + (6*(n+1)^2)/6 := by linarith[this] -- somehow rw[this] doesn't work here
-    _ = ((n*(n+1)*(2*n+1)) + (6*(n+1)^2))/6 := by rw[Nat.add_div_of_dvd_left]; simp
+    _ = ((n*(n+1)*(2*n+1)) + (6*(n+1)^2))/6 := by omega --by rw[Nat.add_div_of_dvd_left]; simp
 
   rw[this]
   ring_nf

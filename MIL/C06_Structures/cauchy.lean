@@ -3,11 +3,12 @@ import Mathlib.Algebra.Group.TypeTags.Basic
 import Mathlib.Data.Finite.Defs
 import Mathlib.Data.Fintype.Card
 import Init.Data.Vector.Basic
-import Mathlib.Logic.Equiv.Array
+import Mathlib.Data.Set.Function
 
 #check Group
 
 open Group
+open Function
 
 --set_option diagnostics true
 
@@ -81,6 +82,25 @@ lemma fold_list {G: Type*} [Group G] (l : List G) (p : ℕ)  (hp : p > 1) (h : l
   nth_rw 1 [this]
   rw[List.foldl_concat f 1  l[p-1] l.dropLast]
 
+lemma last_elem_eq_inv_of_prod {G: Type*} [Fintype G] [Group G] (p : ℕ) (hp : Nat.Prime p) (l : List G) (hl : l.length = p):
+  l.length = p ∧ l.foldl Mul.mul 1 = 1 → (l[p-1]'(by simp[hl]; linarith[Nat.Prime.one_lt hp]))⁻¹ = l.dropLast.foldl Mul.mul 1 := by
+
+  rintro ⟨_, h⟩
+
+  have pg : p > 1 := Nat.Prime.one_lt hp
+  have hl₁ : p - 1 < l.length := by
+    simp[hl]
+    linarith[Nat.Prime.one_lt hp]
+
+  have xmu : Mul.mul (l.dropLast.foldl Mul.mul 1) (l[p-1]'hl₁) = 1 := by
+    rw [fold_list l p pg hl Mul.mul]
+    exact h
+
+  rw [← one_mul (l[p-1]'hl₁)⁻¹]
+  symm
+  rw [ ← div_eq_iff_eq_mul, div_eq_mul_inv, inv_inv]
+  exact xmu
+
 
 
 theorem Cauchy₁ {G: Type*} [Fintype G] [Group G] (p : ℕ) (hp : Nat.Prime p) (pdvd : p ∣ Fintype.card G) :
@@ -93,66 +113,53 @@ theorem Cauchy₁ {G: Type*} [Fintype G] [Group G] (p : ℕ) (hp : Nat.Prime p) 
     simp [X, Set.mem_setOf] at xmem
     simp [xmem]
 
-  have : ∀ x ∈ X, p - 1 < x.length := by sorry
-
-  have pg : p > 1 := by sorry
-
-  -- For proving x[p-1] exists: https://leanprover.zulipchat.com/#narrow/channel/270676-lean4/topic/.E2.9C.94.20Having.20trouble.20reasoning.20about.20list.20elements
-  have xmu : ∀ x, (hx : x ∈ X) → Mul.mul (x.dropLast.foldl Mul.mul 1) (x[p-1]'(this _ hx)) = 1 := by
+  have : ∀ x ∈ X, p - 1 < x.length := by
     rintro x xmem
     simp [X, Set.mem_setOf] at xmem
     rcases xmem with ⟨xl,xmul⟩
-    rw [fold_list x p pg xl Mul.mul]
-    exact xmul
+    rw[xl]
 
-  -- Last element of list is inverse of product of tail
+    cases p with
+    | zero => contradiction
+    | succ n => rw[add_comm, Nat.one_add_sub_one]; linarith
+
+  let Y := { x : List G | x.length = p - 1}
+
+  have : Fintype X := sorry
+  have : Fintype Y := sorry
+
+  let X₁ := X.toFinset
+  let Y₁ := Y.toFinset
+
+  let f : X₁ → Y₁ := sorry
+
+  #check f
+
+  have yc : Y.toFinset.card = (Fintype.card G)^(p-1) := by
+    sorry
+
+  have f_bij : Bijective f := sorry
+
+  have : X.toFinset.card = Y.toFinset.card := by
+    apply Finset.card_bij
+
+
+
+
+
+
+
+
+
+  --have pg : p > 1 := by sorry
+
+  -- For proving x[p-1] exists: https://leanprover.zulipchat.com/#narrow/channel/270676-lean4/topic/.E2.9C.94.20Having.20trouble.20reasoning.20about.20list.20elements
   have : ∀ x, (hx : x ∈ X) → (x[p-1]'(this _ hx))⁻¹ = x.dropLast.foldl Mul.mul 1 := by
     rintro x xmem
-    rw [← one_mul (x[p-1]'(this x xmem))⁻¹]
-    symm
-    rw [ ← div_eq_iff_eq_mul, div_eq_mul_inv, inv_inv]
-    specialize xmu x xmem
-    exact xmu
-
-
-
-
-
-
-
-
-
-
-theorem Cauchy₃ {G: Type*} [Fintype G] [Group G] (p : ℕ) (hp : Nat.Prime p) (pdvd : p ∣ Fintype.card G) :
-  ∃ x : G, orderOf x = p := by
-
-  let X := { x : Vector G p | x.foldl Mul.mul 1 = 1  }
-
-  have : NeZero p := by
-    -- Got some help here: https://leanprover.zulipchat.com/#narrow/channel/270676-lean4/topic/Missing.20something.20fundamental.20about.20Props/with/511666602
-    apply Nat.Prime.ne_zero at hp
-    apply neZero_iff.mpr at hp
-    exact hp
-
-  have : ∀ x ∈ X, x.head * x.tail.foldl Mul.mul 1 = x.foldl Mul.mul 1 := by
-    rintro x xmem
-    simp
-
-
-
-  have : ∀ x ∈ X, x.tail.foldl Mul.mul 1 = x.head⁻¹ := by
-    rintro x xmem
-    rw [← one_mul (x.tail.foldl Mul.mul 1)]
-    nth_rw 1 [← inv_mul_cancel x.head]
-    rw [mul_assoc, ← inv_inv (x.head * x.tail.foldl Mul.mul 1), mul_inv_eq_iff_eq_mul]
-
-
-
-    symm
-    rw[← div_eq_iff_eq_mul, div_eq_mul_inv, inv_inv]
-    rw [← one_mul (x.tail.foldr Mul.mul 1)⁻¹, mul_assoc]
-
-    nth_rw 1 [← inv_mul_cancel x.head]
-
-
-    apply mul_eq_of_eq_mul_inv x.head 1 ((x.tail.foldr Mul.mul 1)⁻¹)
+    simp [X, Set.mem_setOf] at xmem
+    rcases xmem with ⟨xl,xmul⟩
+    apply last_elem_eq_inv_of_prod
+    assumption
+    assumption
+    constructor <;>
+    assumption

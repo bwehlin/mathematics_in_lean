@@ -94,6 +94,34 @@ theorem test1231 (p : ℕ) (hp: Nat.Prime p) :
   have : ∀ x ∈ X, x.head ≥ 0 := by
     sorry
 
+lemma fold_list {G: Type*} [Group G] {p : ℕ}  (hp : p > 1) (l : List G) (h : l.length = p) (f : G → G → G) :
+  f (l.dropLast.foldl f 1) l[p-1] = l.foldl f 1 := by
+
+  have h1 : l.length - 1 < l.length := by
+    simp [hp]
+    rw [h]
+    linarith
+
+  have : l ≠ [] := by
+    apply List.length_pos_iff_ne_nil.mp
+    linarith
+
+  have : l[p-1] = l.getLast this := by
+    symm at h
+    simp [h]
+    rw [←  List.get_length_sub_one h1]
+    simp
+
+
+  have : l = l.dropLast ++ [l[p-1]] := by
+    symm
+    rw [this]
+    rw [List.dropLast_append_getLast]
+
+  symm
+  nth_rw 1 [this]
+  rw[List.foldl_concat f 1  l[p-1] l.dropLast]
+
 lemma fold_identa {G: Type*} [Group G] {p : ℕ} [NeZero p] (hp : p ≥ 1) (x : List G) (g : G) (f : G → G → G) :
   f (x.dropLast.foldl f 1) g = x.foldl f 1 := by
 
@@ -104,12 +132,28 @@ lemma fold_identa {G: Type*} [Group G] {p : ℕ} [NeZero p] (hp : p ≥ 1) (x : 
 lemma fold_identb {G: Type*} [Group G] {p : ℕ} [NeZero p] (hp : p ≥ 1) (x : Vector G p) (g : G) (f : G → G → G) :
   f (x.pop.foldl f 1) x.back = x.foldl f 1 := by
 
+
   let xl := x.toList
   let xlm := x.pop.toList
+
+  have : p - 1 < xl.length := by simp[xl]; linarith
 
   --have : xl = xl.dropLast ++ [xl.getLast] := by
   --  symm
   --  apply List.dropLast_append_getLast
+
+  --have : x.back = x.toArray[p-1] := by
+  --  simp
+
+
+  have : x.back = xl[p-1]'(this) := by
+    simp only [xl]
+    simp [Vector.back]
+    rw [Vector.back!]
+
+
+
+
 
   have : xl ≠ [] := by sorry
   have lem : x.back = xl.getLast this := by
@@ -121,7 +165,7 @@ lemma fold_identb {G: Type*} [Group G] {p : ℕ} [NeZero p] (hp : p ≥ 1) (x : 
 
 
   rw [← List.dropLast_append_getLast]
-  rw[List.foldl_concat f 1 g x.dropLast]
+  rw[List.foldl_concat f 1 x.back xl]
 
 lemma fold_ident {G: Type*} [Group G] {p : ℕ} [NeZero p] (hp : p ≥ 1) (x : Vector G p) (f : G → G → G) :
   f (x.pop.foldl f 1) x.back = x.foldl f 1 := by

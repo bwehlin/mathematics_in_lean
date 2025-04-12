@@ -52,49 +52,9 @@ lemma abel_case {G : Type*} [Fintype G] [CommGroup G] (p n : ℕ) (hc : Fintype.
 
 
 
+-----------------
 
-
-theorem Cauchy₁ {G : Type*} [Fintype G] [Group G] (p : ℕ) (hp : Nat.Prime p) (pdvd : p ∣ Fintype.card G) :
-  ∃ x : G, orderOf x = p := by
-
-  let X := {l : List G | l.length = p ∧ l.prod = 1 }
-  have : Finite X := by
-    by_contra
-
-  have : Fintype.card X = (Fintype.card G)^(p-1) := by
-    sorry
-
-
-  sorry
-  --intro pdiv_card
-  --constructor
-  --sorry
-
-theorem test123 (p : ℕ) (hp: Nat.Prime p) :
-  p ≥ 0 := by
-
-  let X := {x : Vector ℕ p | p ≥ 0}
-
-  have : NeZero p := by
-    constructor
-
-    apply Nat.Prime.ne_zero at hp -- gives hp : p ≠ 0
-    --exact hp doesn't work here, for example (neither does simp, linarith)
-    sorry
-
-  have : ∀ x ∈ X, x.head ≥ 0 := by
-    sorry
-
-
-theorem test1231 (p : ℕ) (hp: Nat.Prime p) :
-  p ≥ 0 := by
-
-  let X := {x : Vector ℕ p | p ≥ 0}
-
-  have : ∀ x ∈ X, x.head ≥ 0 := by
-    sorry
-
-lemma fold_list {G: Type*} [Group G] {p : ℕ}  (hp : p > 1) (l : List G) (h : l.length = p) (f : G → G → G) :
+lemma fold_list {G: Type*} [Group G] (l : List G) (p : ℕ)  (hp : p > 1) (h : l.length = p) (f : G → G → G) :
   f (l.dropLast.foldl f 1) l[p-1] = l.foldl f 1 := by
 
   have h1 : l.length - 1 < l.length := by
@@ -112,7 +72,6 @@ lemma fold_list {G: Type*} [Group G] {p : ℕ}  (hp : p > 1) (l : List G) (h : l
     rw [←  List.get_length_sub_one h1]
     simp
 
-
   have : l = l.dropLast ++ [l[p-1]] := by
     symm
     rw [this]
@@ -122,90 +81,38 @@ lemma fold_list {G: Type*} [Group G] {p : ℕ}  (hp : p > 1) (l : List G) (h : l
   nth_rw 1 [this]
   rw[List.foldl_concat f 1  l[p-1] l.dropLast]
 
-lemma fold_identa {G: Type*} [Group G] {p : ℕ} [NeZero p] (hp : p ≥ 1) (x : List G) (g : G) (f : G → G → G) :
-  f (x.dropLast.foldl f 1) g = x.foldl f 1 := by
-
-  have : x = x.dropLast ++ [g] := by sorry
-  nth_rw 2 [this]
-  rw[List.foldl_concat f 1 g x.dropLast]
-
-lemma fold_identb {G: Type*} [Group G] {p : ℕ} [NeZero p] (hp : p ≥ 1) (x : Vector G p) (g : G) (f : G → G → G) :
-  f (x.pop.foldl f 1) x.back = x.foldl f 1 := by
 
 
-  let xl := x.toList
-  let xlm := x.pop.toList
+theorem Cauchy₁ {G: Type*} [Fintype G] [Group G] (p : ℕ) (hp : Nat.Prime p) (pdvd : p ∣ Fintype.card G) :
+  ∃ x : G, orderOf x = p := by
 
-  have : p - 1 < xl.length := by simp[xl]; linarith
+  let X := { x : List G | x.length = p ∧ x.foldl Mul.mul 1 = 1}
 
-  --have : xl = xl.dropLast ++ [xl.getLast] := by
-  --  symm
-  --  apply List.dropLast_append_getLast
+  have xl : ∀ x ∈ X, x.length = p := by
+    rintro x xmem
+    simp [X, Set.mem_setOf] at xmem
+    simp [xmem]
 
-  --have : x.back = x.toArray[p-1] := by
-  --  simp
+  have : ∀ x ∈ X, p - 1 < x.length := by sorry
 
+  have pg : p > 1 := by sorry
 
-  have : x.back = xl[p-1]'(this) := by
-    simp only [xl]
-    simp [Vector.back]
-    rw [Vector.back!]
+  -- For proving x[p-1] exists: https://leanprover.zulipchat.com/#narrow/channel/270676-lean4/topic/.E2.9C.94.20Having.20trouble.20reasoning.20about.20list.20elements
+  have xmu : ∀ x, (hx : x ∈ X) → Mul.mul (x.dropLast.foldl Mul.mul 1) (x[p-1]'(this _ hx)) = 1 := by
+    rintro x xmem
+    simp [X, Set.mem_setOf] at xmem
+    rcases xmem with ⟨xl,xmul⟩
+    rw [fold_list x p pg xl Mul.mul]
+    exact xmul
 
-
-
-
-
-  have : xl ≠ [] := by sorry
-  have lem : x.back = xl.getLast this := by
-    sorry
-
-  have : xl = xl.dropLast ++ [x.back] := by
-    rw [lem]
-    rw [List.dropLast_append_getLast this]
-
-
-  rw [← List.dropLast_append_getLast]
-  rw[List.foldl_concat f 1 x.back xl]
-
-lemma fold_ident {G: Type*} [Group G] {p : ℕ} [NeZero p] (hp : p ≥ 1) (x : Vector G p) (f : G → G → G) :
-  f (x.pop.foldl f 1) x.back = x.foldl f 1 := by
-
-  --rw [← List.head_eq_getElem_zero]
-  --simp
-
-  have : ∃ m : ℕ, p = m + 1 := by
-    cases p with
-    | zero => contradiction
-    | succ n => simp
-
-  rcases this with ⟨m, hpm⟩
-  rw [List.foldl_concat]
-
-
-
-  sorry
-
-lemma fold_ident {G: Type*} [Group G] {p : ℕ} [NeZero p] (hp : p ≥ 1) (x : Vector G p) (f : G → G → G) :
-  f x.head (x.tail.foldl f 1) = x.foldl f 1 := by
-  simp
-  rw [Equiv.arrayEquivList]
-  rw [← List.cons_head?_tail]
-
-
-lemma fold_ident {G: Type*} [Group G] {p : ℕ} [NeZero p] (hp : p ≥ 1) (x : Vector G p) :
-  x.head * x.tail.foldl Mul.mul 1 = x.foldl Mul.mul 1 := by
-  --simp
-
-
-  cases p
-
-  contradiction
-
-
-
-
-  induction' p with n hn
-  contradiction
+  -- Last element of list is inverse of product of tail
+  have : ∀ x, (hx : x ∈ X) → (x[p-1]'(this _ hx))⁻¹ = x.dropLast.foldl Mul.mul 1 := by
+    rintro x xmem
+    rw [← one_mul (x[p-1]'(this x xmem))⁻¹]
+    symm
+    rw [ ← div_eq_iff_eq_mul, div_eq_mul_inv, inv_inv]
+    specialize xmu x xmem
+    exact xmu
 
 
 
@@ -214,7 +121,6 @@ lemma fold_ident {G: Type*} [Group G] {p : ℕ} [NeZero p] (hp : p ≥ 1) (x : V
 
 
 
-  sorry
 
 
 theorem Cauchy₃ {G: Type*} [Fintype G] [Group G] (p : ℕ) (hp : Nat.Prime p) (pdvd : p ∣ Fintype.card G) :

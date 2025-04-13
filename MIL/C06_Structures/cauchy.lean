@@ -4,11 +4,14 @@ import Mathlib.Data.Finite.Defs
 import Mathlib.Data.Fintype.Card
 import Init.Data.Vector.Basic
 import Mathlib.Data.Set.Function
+import Mathlib.Data.Set.Finite.List
+import Mathlib.Data.Set.Finite.Basic
 
 #check Group
 
 open Group
 open Function
+open Set
 
 --set_option diagnostics true
 
@@ -101,7 +104,30 @@ lemma last_elem_eq_inv_of_prod {G: Type*} [Fintype G] [Group G] (p : ℕ) (hp : 
   rw [ ← div_eq_iff_eq_mul, div_eq_mul_inv, inv_inv]
   exact xmu
 
+variable (G : Type*) [Group G]
+variable (p : ℕ) (h: Nat.Prime p)
+def X : Set (List G) := { x : List G | x.length = p ∧ x.foldl Mul.mul 1 = 1}
 
+lemma asdf : Fintype X := by
+
+
+lemma mylemma {α : Type*} [Fintype α] (n : ℕ) (S : Set (List α) := {l : List α | l.length = n}) [Fintype S] :
+  Fintype.card S = (Fintype.card α)^n := by
+  sorry
+
+theorem test123 {α : Type*} [Fintype α] (n : ℕ) : False := by
+  let S := {l : List α | l.length = n}
+  have : Fintype S := by sorry
+  have : Fintype.card S = (Fintype.card α)^n := by sorry
+  sorry
+
+lemma fsz {G: Type*} [Fintype G] [Group G] (p : ℕ) (hp : Nat.Prime p) :
+  Fintype { x : List G | x.length = p ∧ x.foldl Mul.mul 1 = 1} := by
+  sorry
+
+lemma sz_x {G: Type*} [Fintype G] [Group G] (p : ℕ) (hp : Nat.Prime p) (X := { x : List G | x.length = p ∧ x.foldl Mul.mul 1 = 1}) [Fintype X] :
+  Fintype.card X = (Fintype.card G)^(p-1) := by
+  sorry
 
 theorem Cauchy₁ {G: Type*} [Fintype G] [Group G] (p : ℕ) (hp : Nat.Prime p) (pdvd : p ∣ Fintype.card G) :
   ∃ x : G, orderOf x = p := by
@@ -113,7 +139,7 @@ theorem Cauchy₁ {G: Type*} [Fintype G] [Group G] (p : ℕ) (hp : Nat.Prime p) 
     simp [X, Set.mem_setOf] at xmem
     simp [xmem]
 
-  have : ∀ x ∈ X, p - 1 < x.length := by
+  have xl_lt : ∀ x ∈ X, p - 1 < x.length := by
     rintro x xmem
     simp [X, Set.mem_setOf] at xmem
     rcases xmem with ⟨xl,xmul⟩
@@ -125,36 +151,33 @@ theorem Cauchy₁ {G: Type*} [Fintype G] [Group G] (p : ℕ) (hp : Nat.Prime p) 
 
   let Y := { x : List G | x.length = p - 1}
 
+  have : Finite Y := by apply List.finite_length_eq
+  have : (Fintype.ofFinite Y).card = (Fintype.card G)^(p-1) := by
+    sorry
+
   have : Fintype X := sorry
-  have : Fintype Y := sorry
 
-  let X₁ := X.toFinset
-  let Y₁ := Y.toFinset
+  def f : X → Y :=
 
-  let f : X₁ → Y₁ := sorry
-
-  #check f
+  let f := fun (x : X) → (y : Y) := where
+  | x =>
 
   have yc : Y.toFinset.card = (Fintype.card G)^(p-1) := by
     sorry
 
   have f_bij : Bijective f := sorry
+  #check f
+  have : Finite X := by
+    apply Function.Bijective.finite_iff.mp f_bij
 
   have : X.toFinset.card = Y.toFinset.card := by
-    apply Finset.card_bij
-
-
-
-
-
-
-
-
+    --apply Finset.card_bij
+    sorry
 
   --have pg : p > 1 := by sorry
 
   -- For proving x[p-1] exists: https://leanprover.zulipchat.com/#narrow/channel/270676-lean4/topic/.E2.9C.94.20Having.20trouble.20reasoning.20about.20list.20elements
-  have : ∀ x, (hx : x ∈ X) → (x[p-1]'(this _ hx))⁻¹ = x.dropLast.foldl Mul.mul 1 := by
+  have : ∀ x, (hx : x ∈ X) → (x[p-1]'(xl_lt _ hx))⁻¹ = x.dropLast.foldl Mul.mul 1 := by
     rintro x xmem
     simp [X, Set.mem_setOf] at xmem
     rcases xmem with ⟨xl,xmul⟩

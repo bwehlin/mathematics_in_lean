@@ -198,6 +198,36 @@ lemma f_inj (hp: Nat.Prime p) : Injective (f G p)  := by
 
   exact SetCoe.ext this
 
+lemma f_surj (hp: Nat.Prime p) : Surjective (f G p)  := by
+  intro x
+  let lx := x.1
+  let last := (lx.foldl Mul.mul 1)⁻¹
+  let a := lx ++ [last]
+
+  have : a ∈ X G p := by
+    constructor
+    · have : lx.length = p-1 := by apply x.2
+      simp[this,a]
+      exact Nat.sub_add_cancel (Nat.Prime.pos hp)
+    · simp[a, last]
+      exact mul_inv_cancel (List.foldl Mul.mul 1 lx)
+
+  refine SetCoe.exists.mpr ?_
+  use a
+  constructor
+  simp[f,a]
+  rfl
+  exact this
+
+
+
+
+
+
+
+
+
+
 
 
 

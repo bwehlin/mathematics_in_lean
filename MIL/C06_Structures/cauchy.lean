@@ -104,9 +104,79 @@ lemma last_elem_eq_inv_of_prod {G: Type*} [Fintype G] [Group G] (p : ℕ) (hp : 
   rw [ ← div_eq_iff_eq_mul, div_eq_mul_inv, inv_inv]
   exact xmu
 
-variable (G : Type*) [Group G]
+variable (G : Type*) [Group G] [Fintype G]
 variable (p : ℕ) (h: Nat.Prime p)
 def X : Set (List G) := { x : List G | x.length = p ∧ x.foldl Mul.mul 1 = 1}
+def Y : Set (List G) := { x : List G | x.length = p - 1}
+
+def f : X G p → Y G p := fun x => ⟨ x.val.dropLast, by simp[Y]; rw [x.property.1] ⟩
+
+#check last_elem_eq_inv_of_prod
+
+lemma f_eq : Injective (f G p)  := by
+  rintro x y h
+  simp [f] at h
+  have : x.1 = y.1 := by
+    have hx1 := x.2.1
+    have hx2 := x.2.2
+
+    have hy1 := y.2.1
+    have hy2 := y.2.2
+
+    let lx := x.1
+    let ly := y.1
+
+    have hp : Nat.Prime p := sorry
+
+    have : p-1 < lx.length := sorry
+    have : p-1 < ly.length := sorry
+
+    have : lx[p-1]⁻¹ = lx.dropLast.foldl Mul.mul 1 := by
+      apply last_elem_eq_inv_of_prod
+      apply hp
+      exact x.2.1
+      constructor
+      exact x.2.1
+      exact x.2.2
+
+    have last_x : lx[p-1] = (lx.dropLast.foldl Mul.mul 1)⁻¹ := by
+      apply inv_inj.mpr at this
+      rw [inv_inv] at this
+      exact this
+
+    have : ly[p-1]⁻¹ = ly.dropLast.foldl Mul.mul 1 := by
+      apply last_elem_eq_inv_of_prod
+      apply hp
+      exact y.2.1
+      constructor
+      exact y.2.1
+      exact y.2.2
+
+    have last_y : ly[p-1] = (ly.dropLast.foldl Mul.mul 1)⁻¹ := by
+      apply inv_inj.mpr at this
+      rw [inv_inv] at this
+      exact this
+
+
+
+
+
+
+
+    simp[X] at h
+
+  exact SetCoe.ext this
+  --rw [List.ext_get_iff]
+
+
+
+def X_equiv : X G p ≃ Y G p where
+  toFun := fun x => ⟨ x.val.dropLast, by simp[Y]; rw [x.property.1] ⟩
+  invFun := sorry
+  left_inv := sorry
+  right_inv := sorry
+
+
 
 lemma asdf : Fintype X := by
 

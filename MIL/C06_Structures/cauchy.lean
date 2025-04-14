@@ -113,9 +113,14 @@ def f : X G p → Y G p := fun x => ⟨ x.val.dropLast, by simp[Y]; rw [x.proper
 
 #check last_elem_eq_inv_of_prod
 
-lemma f_eq : Injective (f G p)  := by
+lemma f_inj (hp: Nat.Prime p) : Injective (f G p)  := by
   rintro x y h
   simp [f] at h
+
+  let lx := x.1
+  let ly := y.1
+
+  -- TODO: This should be refactored to avoid repetition, but it works
   have : x.1 = y.1 := by
     have hx1 := x.2.1
     have hx2 := x.2.2
@@ -123,50 +128,76 @@ lemma f_eq : Injective (f G p)  := by
     have hy1 := y.2.1
     have hy2 := y.2.2
 
-    let lx := x.1
-    let ly := y.1
+    have : p-1 < lx.length := by
+      simp[lx, x.2.1]
+      exact Nat.Prime.pos hp
 
-    have hp : Nat.Prime p := sorry
+    have : p-1 < ly.length := by
+      simp[ly, y.2.1]
+      exact Nat.Prime.pos hp
 
-    have : p-1 < lx.length := sorry
-    have : p-1 < ly.length := sorry
+    have lx_ne : lx ≠ [] := by
+      apply List.length_pos_iff_ne_nil.mp
+      linarith
 
-    have : lx[p-1]⁻¹ = lx.dropLast.foldl Mul.mul 1 := by
-      apply last_elem_eq_inv_of_prod
-      apply hp
-      exact x.2.1
-      constructor
-      exact x.2.1
-      exact x.2.2
+    have ly_ne : ly ≠ [] := by
+      apply List.length_pos_iff_ne_nil.mp
+      linarith
 
     have last_x : lx[p-1] = (lx.dropLast.foldl Mul.mul 1)⁻¹ := by
-      apply inv_inj.mpr at this
-      rw [inv_inv] at this
-      exact this
+      apply inv_inj.mp
+      rw [inv_inv]
+      apply last_elem_eq_inv_of_prod
+      apply hp
+      exact x.2.1
+      exact x.2
 
-    have : ly[p-1]⁻¹ = ly.dropLast.foldl Mul.mul 1 := by
+    have last_y : ly[p-1] = (ly.dropLast.foldl Mul.mul 1)⁻¹ := by
+      apply inv_inj.mp
+      rw [inv_inv]
       apply last_elem_eq_inv_of_prod
       apply hp
       exact y.2.1
-      constructor
-      exact y.2.1
-      exact y.2.2
+      exact y.2
 
-    have last_y : ly[p-1] = (ly.dropLast.foldl Mul.mul 1)⁻¹ := by
-      apply inv_inj.mpr at this
-      rw [inv_inv] at this
-      exact this
+    have : lx[p-1] = lx.getLast lx_ne := by
+      simp[← x.2.1]
+      have : lx.length - 1 < lx.length := by
+        simp [hp]
+        rw [x.2.1]
+        linarith
+      rw [←  List.get_length_sub_one this]
+      simp[x.2.1, lx]
 
+    have c_x : lx = lx.dropLast ++ [lx[p-1]] := by
+      symm
+      rw [this]
+      rw [List.dropLast_append_getLast]
 
+    have : ly[p-1] = ly.getLast ly_ne := by
+      simp[← y.2.1]
+      have : ly.length - 1 < ly.length := by
+        simp [hp]
+        rw [y.2.1]
+        linarith
+      rw [←  List.get_length_sub_one this]
+      simp[y.2.1, ly]
 
+    have c_y : ly = ly.dropLast ++ [ly[p-1]] := by
+      symm
+      rw [this]
+      rw [List.dropLast_append_getLast]
 
+    have : lx = ly := by
+      rw [last_x] at c_x
+      rw [h] at c_x
+      rw [c_x]
+      rw [← last_y, ← c_y]
 
-
-
-    simp[X] at h
+    simp[lx, ly, this]
 
   exact SetCoe.ext this
-  --rw [List.ext_get_iff]
+
 
 
 

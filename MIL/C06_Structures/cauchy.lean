@@ -219,16 +219,14 @@ lemma f_surj (hp: Nat.Prime p) : Surjective (f G p)  := by
   rfl
   exact this
 
+lemma f_bij (hp : Nat.Prime p) : Bijective (f G p) := by
+  constructor
+  apply f_inj
+  exact hp
+  apply f_surj
+  exact hp
 
-
-
-
-
-
-
-
-
-
+--lemma xy_card (hp : Nat.Prime p) : Nat.card X = Nat.card Y := by Nat.card_eq_of_bijective
 
 
 def X_equiv : X G p ≃ Y G p where

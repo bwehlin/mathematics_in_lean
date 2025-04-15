@@ -226,14 +226,29 @@ lemma f_bij (hp : Nat.Prime p) : Bijective (f G p) := by
   apply f_surj
   exact hp
 
---lemma xy_card (hp : Nat.Prime p) : Nat.card X = Nat.card Y := by Nat.card_eq_of_bijective
+lemma xy_card (hp : Nat.Prime p) : Nat.card (X G p) = Nat.card (Y G p) := by
+  apply Nat.card_eq_of_bijective (f G p)
+  apply f_bij
+  apply hp
+
+lemma Y_finite : Finite (Y G p) := by
+  apply List.finite_length_eq
+
+instance : Fintype (Y G p) where
+  elems := (Y G p)
+  complete := sorry
 
 
-def X_equiv : X G p ≃ Y G p where
-  toFun := fun x => ⟨ x.val.dropLast, by simp[Y]; rw [x.property.1] ⟩
-  invFun := sorry
-  left_inv := sorry
-  right_inv := sorry
+lemma card_y : (Y G p).toFinset.card = (Fintype.card G)^(p-1) := by
+    sorry
+
+lemma X_fintype (hp : Nat.Prime p) : Finite (X G p) := by
+  have : Finite (Y G p) := by
+
+  apply Finite.Set.subset (Y G p) (X G p)
+
+  rw[ Cardinal.mk_eq_nat_iff_fintype]
+
 
 
 

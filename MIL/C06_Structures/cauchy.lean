@@ -269,6 +269,15 @@ lemma p_div_gp (hp : Nat.Prime p) (hg : Fintype.card G = p) : p ∣ (Fintype.car
   apply Nat.totient_pos.mpr
   assumption
 
+lemma comm_e {a b : G} : a * b = 1 ↔ b * a = 1 := by
+  constructor
+  · intro h
+    apply mul_eq_one_iff_eq_inv.mp at h
+    rw[h, mul_inv_cancel]
+  · intro h
+    apply mul_eq_one_iff_eq_inv.mp at h
+    rw[h, mul_inv_cancel]
+
 theorem Cauchy₂ (hp : Nat.Prime p) (pdvd : p ∣ Fintype.card G) :
   ∃ x : G, orderOf x = p := by
   sorry

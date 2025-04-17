@@ -245,28 +245,40 @@ lemma card_y : Fintype.card (Y G p) = (Fintype.card G)^(p-1) := by
   have : Y G p = List.Vector G (p-1) := by simp[Y, List.Vector]
   simp[this]
 
+lemma card_x (hp: Nat.Prime p) : Nat.card (X G p) = (Fintype.card G)^(p-1) := by
+  rw [← card_y,  Fintype.card_eq_nat_card, xy_card]
+  apply hp
 
+lemma X_finite (hp : Nat.Prime p) : Finite (X G p) := by
+  have : Nat.card (X G p) = (Fintype.card G)^(p-1) := by apply card_x; apply hp
+  have : Nat.card (X G p) ≠ 0 := by simp[this]
+  apply Nat.finite_of_card_ne_zero this
 
-lemma mylemma {α : Type*} [Fintype α] (n : ℕ) (S : Set (List α) := {l : List α | l.length = n}) [Fintype S] :
-  Fintype.card S = (Fintype.card α)^n := by
+lemma p_div_gp (hp : Nat.Prime p) (hg : Fintype.card G = p) : p ∣ (Fintype.card G)^(p-1) := by
+  rw [hg]
+  apply dvd_pow_self
+  have : p ≥ 2 := Nat.Prime.two_le hp
+  apply Nat.one_le_iff_ne_zero.mp
+  have : 0 < p := by linarith[Nat.Prime.two_le hp]
+  have : p -  1 = p.totient := by
+    apply Nat.totient_eq_iff_prime at this
+    symm
+    apply this.mpr
+    apply hp
+  rw[this]
+  apply Nat.totient_pos.mpr
+  assumption
+
+theorem Cauchy₂ (hp : Nat.Prime p) (pdvd : p ∣ Fintype.card G) :
+  ∃ x : G, orderOf x = p := by
   sorry
 
-theorem test123 {α : Type*} [Fintype α] (n : ℕ) : False := by
-  let S := {l : List α | l.length = n}
-  have : Fintype S := by sorry
-  have : Fintype.card S = (Fintype.card α)^n := by sorry
-  sorry
-
-lemma fsz {G: Type*} [Fintype G] [Group G] (p : ℕ) (hp : Nat.Prime p) :
-  Fintype { x : List G | x.length = p ∧ x.foldl Mul.mul 1 = 1} := by
-  sorry
-
-lemma sz_x {G: Type*} [Fintype G] [Group G] (p : ℕ) (hp : Nat.Prime p) (X := { x : List G | x.length = p ∧ x.foldl Mul.mul 1 = 1}) [Fintype X] :
-  Fintype.card X = (Fintype.card G)^(p-1) := by
-  sorry
 
 theorem Cauchy₁ {G: Type*} [Fintype G] [Group G] (p : ℕ) (hp : Nat.Prime p) (pdvd : p ∣ Fintype.card G) :
   ∃ x : G, orderOf x = p := by
+
+  instance : Fintype (X G p) := by
+  apply Fintype.ofFinite (X G p)
 
   let X := { x : List G | x.length = p ∧ x.foldl Mul.mul 1 = 1}
 

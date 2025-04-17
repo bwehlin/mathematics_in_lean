@@ -237,47 +237,14 @@ lemma xy_card (hp : Nat.Prime p) : Nat.card (X G p) = Nat.card (Y G p) := by
 lemma Y_finite : Finite (Y G p) := by
   apply List.finite_length_eq
 
-lemma Y_finiteplus : Finite ↑(Y G p) := by
-  apply List.finite_length_eq
+instance : Fintype (Y G p) := by
+  have : Finite (Y G p) := by apply List.finite_length_eq
+  apply Fintype.ofFinite (Y G p)
 
-lemma card_y (h : Fintype (Y G p)) : Fintype.card (Y G p) = (Fintype.card G)^(p-1) := by
+lemma card_y : Fintype.card (Y G p) = (Fintype.card G)^(p-1) := by
   have : Y G p = List.Vector G (p-1) := by simp[Y, List.Vector]
   simp[this]
 
-instance : Fintype (Y G p) := Fintype.ofFinite
-
-lemma card_y1 (h : Fintype (Y G p)) : Finite.card (Y G p) = (Fintype.card G)^(p-1) := by
-  have : Y G p = List.Vector G (p-1) := by simp[Y, List.Vector]
-  simp[this]
-
-lemma card_y2 : Nat.card (Y G p) = (Fintype.card G)^(p-1) := by
-    have : Finite (Y G p) := by apply List.finite_length_eq
-    simp[Y]
-    --rw[List.Vector]
-
-    simp [List.Vector.card_vector]
-
-    have : Finset (Y G p) := by
-      simp[this]
-
-    have : Fintype (Y G p) := by
-      constructor
-      rintro a
-
-    rw[ Nat.card_eq_fintype_card]
-    simp[this, ]
-
-lemma X_fintype (hp : Nat.Prime p) : Finite (X G p) := by
-  have : Finite (Y G p) := by
-
-  apply Finite.Set.subset (Y G p) (X G p)
-
-  rw[ Cardinal.mk_eq_nat_iff_fintype]
-
-
-
-
-lemma asdf : Fintype X := by
 
 
 lemma mylemma {α : Type*} [Fintype α] (n : ℕ) (S : Set (List α) := {l : List α | l.length = n}) [Fintype S] :

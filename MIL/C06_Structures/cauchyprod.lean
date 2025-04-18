@@ -16,51 +16,6 @@ open Group
 open Function
 open Set
 
---set_option diagnostics true
-
-lemma monoid_card_gt_zero {M : Type*} [Monoid M] [Fintype M] : Fintype.card M > 0 := by
-  by_contra!
-  apply Nat.le_zero.mp at this
-  simp at this
-
-lemma monoid_nempty {M : Type*} [Monoid M] [Fintype M] : Fintype.card M = 0 → False := by
-  have : Fintype.card M > 0 := monoid_card_gt_zero
-  intro h
-  -- it is beyond me why the following works and 'contradiction' doesn't
-  let n := Fintype.card M
-  simp [n] at h
-
-theorem thm123 {G : Type*} [Group G] : ∃ x : G, x * x = x := by
-  use 1
-  apply Monoid.one_mul
-
-lemma abel_case {G : Type*} [Fintype G] [CommGroup G] (p n : ℕ) (hc : Fintype.card G = n) (hp : Nat.Prime p) (pdvd : p ∣ n) :
-  ∃ x : G, orderOf x = p := by
-  rcases pdvd with ⟨m, hdvd⟩
-
-  have : m > 0 := by
-    by_contra hm
-    push_neg at hm
-    apply Nat.le_zero.mp at hm
-    rw [hm, mul_zero,← hc] at hdvd
-    apply monoid_nempty at hdvd
-    exact hdvd
-
-
-
-  cases m
-  · contradiction
-  case succ m =>
-
-  let n := Fintype.card G
-  induction' m with m ih
-  · sorry
-  · sorry
-
-
-
------------------
-
 lemma fold_list {G: Type*} [Group G] (l : List G) (p : ℕ)  (hp : p > 1) (h : l.length = p) (f : G → G → G) :
   f (l.dropLast.foldl f 1) l[p-1] = l.foldl f 1 := by
 
@@ -108,10 +63,6 @@ lemma prod_split {G: Type*} [Group G] (l₁ l₂ : List G) (p : ℕ)  (hp : p > 
   (l₁ ++ l₂).prod = l₁.prod * l₂.prod := by
   simp
 
-lemma prod_split' {G: Type*} [Group G] (l₁ l₂ : List G) (p : ℕ)  (hp : p > 1) (h : l.length = p) (f : G → G → G) :
-  List.foldl Mul.mul 1 (l₁ ++ l₂) = Mul.mul (List.foldl Mul.mul 1 l₁) (List.foldl Mul.mul 1 l₂) := by
-  rw [← List.prod_eq_foldl (List.foldl Mul.mul 1 l₁)]
-  simp
 
 lemma fold_split {G: Type*} [Group G] (l₁ l₂ : List G) (p : ℕ)  (hp : p > 1) (h : l.length = p) (f : G → G → G) :
   List.foldl f 1 (l₁ ++ l₂) = f (List.foldl f 1 l₁) (List.foldl f 1 l₂) := by
@@ -134,7 +85,7 @@ lemma fold_list' {G: Type*} [Group G] (l : List G) (p : ℕ)  (hp : p > 1) (h : 
   rw[←  List.prod]
 
 lemma last_elem_eq_inv_of_prod {G: Type*} [Fintype G] [Group G] (p : ℕ) (hp : Nat.Prime p) (l : List G) (hl : l.length = p):
-  l.length = p ∧ l.foldl Mul.mul 1 = 1 → (l[p-1]'(by simp[hl]; linarith[Nat.Prime.one_lt hp]))⁻¹ = l.dropLast.foldl Mul.mul 1 := by
+  l.length = p ∧ l.prod = 1 → (l[p-1]'(by simp[hl]; linarith[Nat.Prime.one_lt hp]))⁻¹ = l.dropLast.prod := by
 
   rintro ⟨_, h⟩
 
@@ -143,8 +94,10 @@ lemma last_elem_eq_inv_of_prod {G: Type*} [Fintype G] [Group G] (p : ℕ) (hp : 
     simp[hl]
     linarith[Nat.Prime.one_lt hp]
 
-  have xmu : Mul.mul (l.dropLast.foldl Mul.mul 1) (l[p-1]'hl₁) = 1 := by
-    rw [fold_list l p pg hl Mul.mul]
+  have xmu : (l.dropLast.prod) * (l[p-1]'hl₁) = 1 := by
+    rw [List.prod_eq_foldl]
+    rw [fold_list l p pg hl (fun x1 x2 ↦ x1 * x2)]
+    rw [← List.prod_eq_foldl]
     exact h
 
   rw [← one_mul (l[p-1]'hl₁)⁻¹]
@@ -154,7 +107,7 @@ lemma last_elem_eq_inv_of_prod {G: Type*} [Fintype G] [Group G] (p : ℕ) (hp : 
 
 variable (G : Type*) [Group G] [Fintype G]
 variable (p : ℕ) (h: Nat.Prime p)
-def X : Set (List G) := { x : List G | x.length = p ∧ x.foldl Mul.mul 1 = 1}
+def X : Set (List G) := { x : List G | x.length = p ∧ x.prod = 1}
 def Y : Set (List G) := { x : List G | x.length = p - 1}
 
 def f : X G p → Y G p := fun x => ⟨ x.val.dropLast, by simp[Y]; rw [x.property.1] ⟩
@@ -192,7 +145,7 @@ lemma f_inj (hp: Nat.Prime p) : Injective (f G p)  := by
       apply List.length_pos_iff_ne_nil.mp
       linarith
 
-    have last_x : lx[p-1] = (lx.dropLast.foldl Mul.mul 1)⁻¹ := by
+    have last_x : lx[p-1] = (lx.dropLast.prod)⁻¹ := by
       apply inv_inj.mp
       rw [inv_inv]
       apply last_elem_eq_inv_of_prod
@@ -200,7 +153,7 @@ lemma f_inj (hp: Nat.Prime p) : Injective (f G p)  := by
       exact x.2.1
       exact x.2
 
-    have last_y : ly[p-1] = (ly.dropLast.foldl Mul.mul 1)⁻¹ := by
+    have last_y : ly[p-1] = (ly.dropLast.prod)⁻¹ := by
       apply inv_inj.mp
       rw [inv_inv]
       apply last_elem_eq_inv_of_prod
@@ -249,7 +202,7 @@ lemma f_inj (hp: Nat.Prime p) : Injective (f G p)  := by
 lemma f_surj (hp: Nat.Prime p) : Surjective (f G p)  := by
   intro x
   let lx := x.1
-  let last := (lx.foldl Mul.mul 1)⁻¹
+  let last := (lx.prod)⁻¹
   let a := lx ++ [last]
 
   have : a ∈ X G p := by
@@ -258,7 +211,6 @@ lemma f_surj (hp: Nat.Prime p) : Surjective (f G p)  := by
       simp[this,a]
       exact Nat.sub_add_cancel (Nat.Prime.pos hp)
     · simp[a, last]
-      exact mul_inv_cancel (List.foldl Mul.mul 1 lx)
 
   refine SetCoe.exists.mpr ?_
   use a
@@ -359,75 +311,30 @@ instance : MulAction (ZMod p) (X G p) where
 
   mul_smul := sorry
 
-instance : MulAction (ZMod p) (List G) where
-  smul n x := x.rotate n.val
-  one_smul := by
-    intro x
+instance (hp : Nat.Prime p) : AddAction (ZMod p) (X G p) where
 
-  mul_smul := sorry
+  vadd n x := ⟨x.1.rotate n.val, by
+    simp[X]
+    constructor
+    apply x.2.1
+    induction' n.val with n hn
+    rw[List.rotate_zero]
+    apply x.2.2
+    rw [← List.rotate_rotate]
+    have : x.1.rotate n ∈ (X G p) := by
+      constructor
+      rw [List.length_rotate]
+      apply x.2.1
+      exact hn
+    have : (x.1.rotate n).rotate 1 ∈ (X G p) := by
+      apply action_by_generator G p ⟨x.1.rotate n, this⟩
+      apply hp
+    apply this.2
+  ⟩
+  add_vadd m n x := by
+    sorry
+  zero_vadd := sorry
 
 theorem Cauchy₂ (hp : Nat.Prime p) (pdvd : p ∣ Fintype.card G) :
   ∃ x : G, orderOf x = p := by
   sorry
-
-
-theorem Cauchy₁ {G: Type*} [Fintype G] [Group G] (p : ℕ) (hp : Nat.Prime p) (pdvd : p ∣ Fintype.card G) :
-  ∃ x : G, orderOf x = p := by
-
-  instance : Fintype (X G p) := by
-  apply Fintype.ofFinite (X G p)
-
-  let X := { x : List G | x.length = p ∧ x.foldl Mul.mul 1 = 1}
-
-  have xl : ∀ x ∈ X, x.length = p := by
-    rintro x xmem
-    simp [X, Set.mem_setOf] at xmem
-    simp [xmem]
-
-  have xl_lt : ∀ x ∈ X, p - 1 < x.length := by
-    rintro x xmem
-    simp [X, Set.mem_setOf] at xmem
-    rcases xmem with ⟨xl,xmul⟩
-    rw[xl]
-
-    cases p with
-    | zero => contradiction
-    | succ n => rw[add_comm, Nat.one_add_sub_one]; linarith
-
-  let Y := { x : List G | x.length = p - 1}
-
-  have : Finite Y := by apply List.finite_length_eq
-  have : (Fintype.ofFinite Y).card = (Fintype.card G)^(p-1) := by
-    sorry
-
-  have : Fintype X := sorry
-
-  def f : X → Y :=
-
-  let f := fun (x : X) → (y : Y) := where
-  | x =>
-
-  have yc : Y.toFinset.card = (Fintype.card G)^(p-1) := by
-    sorry
-
-  have f_bij : Bijective f := sorry
-  #check f
-  have : Finite X := by
-    apply Function.Bijective.finite_iff.mp f_bij
-
-  have : X.toFinset.card = Y.toFinset.card := by
-    --apply Finset.card_bij
-    sorry
-
-  --have pg : p > 1 := by sorry
-
-  -- For proving x[p-1] exists: https://leanprover.zulipchat.com/#narrow/channel/270676-lean4/topic/.E2.9C.94.20Having.20trouble.20reasoning.20about.20list.20elements
-  have : ∀ x, (hx : x ∈ X) → (x[p-1]'(xl_lt _ hx))⁻¹ = x.dropLast.foldl Mul.mul 1 := by
-    rintro x xmem
-    simp [X, Set.mem_setOf] at xmem
-    rcases xmem with ⟨xl,xmul⟩
-    apply last_elem_eq_inv_of_prod
-    assumption
-    assumption
-    constructor <;>
-    assumption

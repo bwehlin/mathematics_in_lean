@@ -299,26 +299,6 @@ lemma action_by_generator (x : X G p) (hp : Nat.Prime p) : List.rotate x 1 ∈ (
 
   rw [comm_e]
 
-instance : MulAction (ZMod p) (X G p) where
-  smul n x := ⟨ x.1.rotate n.val, by
-    simp[X]
-    constructor
-    apply x.2.1
-    #check x.1
-    simp only [x.1] ⟩
-  one_smul := by
-    intro x
-
-  mul_smul := sorry
-
-instance a : AddAction ℤ ℝ where
-  vadd n x := n + x
-  zero_vadd x := by
-    -- ⊢ 0 +ᵥ x = x
-    simp [· +ᵥ ·]
-    simp[0 +ᵥ x] -- unknown identifier 'vadd'
-  add_vadd m n x := sorry
-
 instance (hp : Nat.Prime p) : AddAction (ZMod p) (X G p) where
 
   vadd n x := ⟨x.1.rotate n.val, by
@@ -348,7 +328,7 @@ instance (hp : Nat.Prime p) : AddAction (ZMod p) (X G p) where
     simp[this]
     rw[List.rotate_mod, add_comm]
 
-  zero_vadd := sorry
+  zero_vadd x := by simp [· +ᵥ ·]
 
 theorem Cauchy₂ (hp : Nat.Prime p) (pdvd : p ∣ Fintype.card G) :
   ∃ x : G, orderOf x = p := by

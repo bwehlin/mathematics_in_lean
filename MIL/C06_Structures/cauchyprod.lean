@@ -311,6 +311,14 @@ instance : MulAction (ZMod p) (X G p) where
 
   mul_smul := sorry
 
+instance a : AddAction ℤ ℝ where
+  vadd n x := n + x
+  zero_vadd x := by
+    -- ⊢ 0 +ᵥ x = x
+    simp [· +ᵥ ·]
+    simp[0 +ᵥ x] -- unknown identifier 'vadd'
+  add_vadd m n x := sorry
+
 instance (hp : Nat.Prime p) : AddAction (ZMod p) (X G p) where
 
   vadd n x := ⟨x.1.rotate n.val, by
@@ -331,8 +339,15 @@ instance (hp : Nat.Prime p) : AddAction (ZMod p) (X G p) where
       apply hp
     apply this.2
   ⟩
+
   add_vadd m n x := by
-    sorry
+    simp [· +ᵥ ·] -- https://leanprover.zulipchat.com/#narrow/channel/270676-lean4/topic/.E2.9C.94.20How.20to.20expand.20definition.20within.20instance.3F/with/513063729
+    have : NeZero p := ⟨ Nat.Prime.ne_zero hp ⟩
+    rw [List.rotate_rotate, ZMod.val_add]
+    have : p = x.1.length := by symm; apply x.2.1
+    simp[this]
+    rw[List.rotate_mod, add_comm]
+
   zero_vadd := sorry
 
 theorem Cauchy₂ (hp : Nat.Prime p) (pdvd : p ∣ Fintype.card G) :

@@ -44,32 +44,8 @@ lemma fold_list {G: Type*} [Group G] (l : List G) (p : ℕ)  (hp : p > 1) (h : l
   rw[List.foldl_concat f 1  l[p-1] l.dropLast]
 
 
-lemma fold_split {G: Type*} [Group G] (l : List G) (p : ℕ)  (hp : p > 1) (h : l.length = p) (f : G → G → G) :
-  List.foldl f 1 (List.drop 1 l ++ List.take 1 l) = f (List.foldl f 1 (List.drop 1 l)) (List.foldl f 1 (List.take 1 l)) := by
-
-  let l₁ := List.drop 1 l ++ List.take 1 l
-
-  have : l ≠ [] := sorry
-
-  have : l[0] = l.head this := by simp
-
-  have : 0 < l.length := sorry
-  have : [l[0]] = l.take 1 := by simp
-
-
-  simp
-
-lemma prod_split {G: Type*} [Group G] (l₁ l₂ : List G) (p : ℕ)  (hp : p > 1) (h : l.length = p) (f : G → G → G) :
+lemma prod_split {G: Type*} [Group G] (l₁ l₂ : List G) :
   (l₁ ++ l₂).prod = l₁.prod * l₂.prod := by
-  simp
-
-
-lemma fold_split {G: Type*} [Group G] (l₁ l₂ : List G) (p : ℕ)  (hp : p > 1) (h : l.length = p) (f : G → G → G) :
-  List.foldl f 1 (l₁ ++ l₂) = f (List.foldl f 1 l₁) (List.foldl f 1 l₂) := by
-
-  let l := l₁ ++ l₂
-
-
   simp
 
 
@@ -106,7 +82,7 @@ lemma last_elem_eq_inv_of_prod {G: Type*} [Fintype G] [Group G] (p : ℕ) (hp : 
   exact xmu
 
 variable (G : Type*) [Group G] [Fintype G]
-variable (p : ℕ) (h: Nat.Prime p)
+variable (p : ℕ) [hp : Fact p.Prime]
 def X : Set (List G) := { x : List G | x.length = p ∧ x.prod = 1}
 def Y : Set (List G) := { x : List G | x.length = p - 1}
 
@@ -114,7 +90,7 @@ def f : X G p → Y G p := fun x => ⟨ x.val.dropLast, by simp[Y]; rw [x.proper
 
 #check last_elem_eq_inv_of_prod
 
-lemma f_inj (hp: Nat.Prime p) : Injective (f G p)  := by
+lemma f_inj  : Injective (f G p)  := by
   rintro x y h
   simp [f] at h
 
@@ -131,11 +107,11 @@ lemma f_inj (hp: Nat.Prime p) : Injective (f G p)  := by
 
     have : p-1 < lx.length := by
       simp[lx, x.2.1]
-      exact Nat.Prime.pos hp
+      exact Nat.Prime.pos hp.out
 
     have : p-1 < ly.length := by
       simp[ly, y.2.1]
-      exact Nat.Prime.pos hp
+      exact Nat.Prime.pos hp.out
 
     have lx_ne : lx ≠ [] := by
       apply List.length_pos_iff_ne_nil.mp
@@ -149,7 +125,7 @@ lemma f_inj (hp: Nat.Prime p) : Injective (f G p)  := by
       apply inv_inj.mp
       rw [inv_inv]
       apply last_elem_eq_inv_of_prod
-      apply hp
+      apply hp.out
       exact x.2.1
       exact x.2
 
@@ -157,7 +133,7 @@ lemma f_inj (hp: Nat.Prime p) : Injective (f G p)  := by
       apply inv_inj.mp
       rw [inv_inv]
       apply last_elem_eq_inv_of_prod
-      apply hp
+      apply hp.out
       exact y.2.1
       exact y.2
 
@@ -199,7 +175,7 @@ lemma f_inj (hp: Nat.Prime p) : Injective (f G p)  := by
 
   exact SetCoe.ext this
 
-lemma f_surj (hp: Nat.Prime p) : Surjective (f G p)  := by
+lemma f_surj : Surjective (f G p)  := by
   intro x
   let lx := x.1
   let last := (lx.prod)⁻¹
@@ -209,7 +185,7 @@ lemma f_surj (hp: Nat.Prime p) : Surjective (f G p)  := by
     constructor
     · have : lx.length = p-1 := by apply x.2
       simp[this,a]
-      exact Nat.sub_add_cancel (Nat.Prime.pos hp)
+      exact Nat.sub_add_cancel (Nat.Prime.pos hp.out)
     · simp[a, last]
 
   refine SetCoe.exists.mpr ?_
@@ -219,17 +195,14 @@ lemma f_surj (hp: Nat.Prime p) : Surjective (f G p)  := by
   rfl
   exact this
 
-lemma f_bij (hp : Nat.Prime p) : Bijective (f G p) := by
+lemma f_bij : Bijective (f G p) := by
   constructor
   apply f_inj
-  exact hp
   apply f_surj
-  exact hp
 
-lemma xy_card (hp : Nat.Prime p) : Nat.card (X G p) = Nat.card (Y G p) := by
+lemma xy_card : Nat.card (X G p) = Nat.card (Y G p) := by
   apply Nat.card_eq_of_bijective (f G p)
   apply f_bij
-  apply hp
 
 lemma Y_finite : Finite (Y G p) := by
   apply List.finite_length_eq
@@ -242,26 +215,25 @@ lemma card_y : Fintype.card (Y G p) = (Fintype.card G)^(p-1) := by
   have : Y G p = List.Vector G (p-1) := by simp[Y, List.Vector]
   simp[this]
 
-lemma card_x (hp: Nat.Prime p) : Nat.card (X G p) = (Fintype.card G)^(p-1) := by
+lemma card_x : Nat.card (X G p) = (Fintype.card G)^(p-1) := by
   rw [← card_y,  Fintype.card_eq_nat_card, xy_card]
-  apply hp
 
-lemma X_finite (hp : Nat.Prime p) : Finite (X G p) := by
-  have : Nat.card (X G p) = (Fintype.card G)^(p-1) := by apply card_x; apply hp
+lemma X_finite : Finite (X G p) := by
+  have : Nat.card (X G p) = (Fintype.card G)^(p-1) := by apply card_x
   have : Nat.card (X G p) ≠ 0 := by simp[this]
   apply Nat.finite_of_card_ne_zero this
 
-lemma p_div_gp (hp : Nat.Prime p) (hg : Fintype.card G = p) : p ∣ (Fintype.card G)^(p-1) := by
+lemma p_div_gp (hg : Fintype.card G = p) : p ∣ (Fintype.card G)^(p-1) := by
   rw [hg]
   apply dvd_pow_self
-  have : p ≥ 2 := Nat.Prime.two_le hp
+  have : p ≥ 2 := Nat.Prime.two_le hp.out
   apply Nat.one_le_iff_ne_zero.mp
-  have : 0 < p := by linarith[Nat.Prime.two_le hp]
+  have : 0 < p := by linarith[Nat.Prime.two_le hp.out]
   have : p -  1 = p.totient := by
     apply Nat.totient_eq_iff_prime at this
     symm
     apply this.mpr
-    apply hp
+    apply hp.out
   rw[this]
   apply Nat.totient_pos.mpr
   assumption
@@ -299,7 +271,7 @@ lemma action_by_generator (x : X G p) (hp : Nat.Prime p) : List.rotate x 1 ∈ (
 
   rw [comm_e]
 
-instance (hp : Nat.Prime p) : AddAction (ZMod p) (X G p) where
+instance zmod_action : AddAction (ZMod p) (X G p) where
 
   vadd n x := ⟨x.1.rotate n.val, by
     simp[X]
@@ -316,19 +288,24 @@ instance (hp : Nat.Prime p) : AddAction (ZMod p) (X G p) where
       exact hn
     have : (x.1.rotate n).rotate 1 ∈ (X G p) := by
       apply action_by_generator G p ⟨x.1.rotate n, this⟩
-      apply hp
+      apply hp.out
     apply this.2
   ⟩
 
   add_vadd m n x := by
     simp [· +ᵥ ·] -- https://leanprover.zulipchat.com/#narrow/channel/270676-lean4/topic/.E2.9C.94.20How.20to.20expand.20definition.20within.20instance.3F/with/513063729
-    have : NeZero p := ⟨ Nat.Prime.ne_zero hp ⟩
+    have : NeZero p := ⟨ Nat.Prime.ne_zero hp.out ⟩
     rw [List.rotate_rotate, ZMod.val_add]
     have : p = x.1.length := by symm; apply x.2.1
     simp[this]
     rw[List.rotate_mod, add_comm]
 
   zero_vadd x := by simp [· +ᵥ ·]
+
+lemma aaaa : ∀ x : (X G p),
+  Nat.card (AddAction.orbit (ZMod p) x) = 1 ∨ Nat.card (AddAction.orbit (ZMod p) x) = p := by
+
+  sorry
 
 theorem Cauchy₂ (hp : Nat.Prime p) (pdvd : p ∣ Fintype.card G) :
   ∃ x : G, orderOf x = p := by

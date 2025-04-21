@@ -7,6 +7,7 @@ import Mathlib.Data.Set.Function
 import Mathlib.Data.Set.Finite.List
 import Mathlib.Data.Set.Finite.Basic
 import Mathlib.Data.Fintype.BigOperators
+import Mathlib.GroupTheory.PGroup
 
 #check Group
 
@@ -260,12 +261,20 @@ lemma action_by_generator (x : X G p) (hp : Nat.Prime p) : List.rotate x 1 ∈ (
   #check x.2.1
   have : 2 ≤  x.1.length := by simp[x.2.1]; apply Nat.Prime.two_le hp
   have : 0 < x.1.length := by linarith
-  have : xl ≠ [] := by sorry
-  have : xl.take 1 = [xl.head this] := by
-    dsimp
+  have : 1 < xl.inits.length := by
+    rw [List.length_inits]
+    linarith
+  have nonempty : xl ≠ [] := by sorry
+  have : xl.inits[1] = xl.take 1 := by
+    apply List.getElem_inits
+  have : xl.take 1 = [xl[0]] := by
+    rw[← this]
+    rw [List.inits]
+  have : xl.take 1 = [xl.head nonempty] := by
+    apply List.head_eq_getElem_zero
 
   have : xl.take 1 = [xl[0]] := by
-    rw [List.head_eq_getElem_zero]
+    rw [this, List.head_eq_getElem_zero]
 
   --rw [← List.append_eq_has_append]
 
@@ -302,10 +311,20 @@ instance zmod_action : AddAction (ZMod p) (X G p) where
 
   zero_vadd x := by simp [· +ᵥ ·]
 
+lemma dsadsas (pdvd : p ∣ Fintype.card G) : IsPGroup p G := by
+  apply IsPGroup.iff_card.mpr
+  rcases pdvd with ⟨a,b⟩
+  use 1
+
+
 lemma aaaa : ∀ x : (X G p),
   Nat.card (AddAction.orbit (ZMod p) x) = 1 ∨ Nat.card (AddAction.orbit (ZMod p) x) = p := by
+  intro x
 
   sorry
+
+-- ∀ {G : Type u_3} [inst : Group G] [inst_1 : Fintype G] (p : ℕ) [hp : Fact (Nat.Prime p)],
+-- p ∣ Fintype.card G → ∃ x, orderOf x = p
 
 theorem Cauchy₂ (hp : Nat.Prime p) (pdvd : p ∣ Fintype.card G) :
   ∃ x : G, orderOf x = p := by

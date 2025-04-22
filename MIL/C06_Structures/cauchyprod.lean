@@ -248,7 +248,7 @@ lemma comm_e {a b : G} : a * b = 1 ↔ b * a = 1 := by
     apply mul_eq_one_iff_eq_inv.mp at h
     rw[h, mul_inv_cancel]
 
-lemma action_by_generator₂ (x : X G p) (hp : Nat.Prime p) : List.rotate x 1 ∈ (X G p) := by
+lemma action_by_generator (x : X G p) (hp : Nat.Prime p) : List.rotate x 1 ∈ (X G p) := by
 
   constructor
   · simp
@@ -256,18 +256,18 @@ lemma action_by_generator₂ (x : X G p) (hp : Nat.Prime p) : List.rotate x 1 �
 
   let xl := x.1
 
-  have : 0 < x.1.length := by sorry --linarith
+  have zero_lt : 0 < x.1.length := by sorry --linarith
   have nonempty : x.1 ≠ [] := sorry
 
   let b := xl.tail.prod
   let a := xl[0]
 
-  have : a = [a].prod := by simp
+  have a_eq_a_prod : a = [a].prod := by simp
 
   have singleton_append_eq_cons (l : List G) : ∀ x : G, [x] ++ l = x :: l := by simp
 
-  have : a * b  = 1 := by
-    rw [this]
+  have : a * b = 1 := by
+    rw [a_eq_a_prod]
     rw [← List.prod_append]
     simp only[a]
     rw [← List.head_eq_getElem_zero nonempty]
@@ -275,119 +275,27 @@ lemma action_by_generator₂ (x : X G p) (hp : Nat.Prime p) : List.rotate x 1 �
     rw [List.head_cons_tail]
     apply x.2.2
 
-
-
-
-
-
-
-
-    apply last_elem_eq_inv_of_prod
-
-  have : xl = [xl[0]] ++ xl.tail := by
-    sorry
-  have : xl.rotate 1 = xl.tail ++ [xl[0]] := by
-    rw [List.rotate_eq_drop_append_take]
-    sorry
-
-  -- List.prod_inv_reverse
-
-  --simp[X, xl]
-  rw[this]
-  --rw [List.rotate_eq_drop_append_take]
-
-
-
-
-  rw [← List.getElem_cyclicPermutations]
-
-  rw[ ←  List.cyclicPermutations_cons]
-
-  rw [List.head?_rotate]
-
-lemma action_by_generator (x : X G p) (hp : Nat.Prime p) : List.rotate x 1 ∈ (X G p) := by
-  let xl := x.1
-  #check x.2.1
-  constructor
-  · simp [X]
-    apply x.2.1
-
-  simp[X, xl]
-  rw [List.rotate_eq_drop_append_take]
-  have : p-1 < x.1.length := by sorry
-
-  have : xl[p-1]⁻¹ = xl.dropLast.prod := by
-    apply last_elem_eq_inv_of_prod
-    apply hp
-    apply x.2.1
-    constructor
-    apply x.2.1
-    apply x.2.2
-
-  have : xl[p-1] * xl.dropLast.prod = 1 := by
-    apply inv_eq_iff_mul_eq_one.mp
-    apply this
-
-  --have : xl[p-1] = [xl[p-1]].prod := by simp
-
-  have : [xl[p-1]].prod * xl.dropLast.prod = 1 := by
-    simp
-    apply this
-
-  have : xl.drop 1 ++ xl.take 1 =  xl.dropFirst ++ [xl[0]] := by
-    simp
-
-  -- take: Extracts the first n elements of xs, or the whole list if n is greater than xs.length.
-  -- drop: Removes the first n elements of the list xs. Returns the empty list if n is greater than the length of the list.
-  rw [← List.prod_append] at this
-
-  have :  xl.dropLast.prod * xl[p-1] = 1 := by
+  have b_a_eq_one : b * a = 1 := by
     rw [comm_e]
     apply this
 
+  have : xl.head nonempty = xl[0] := by
+    exact List.head_eq_getElem xl nonempty
 
+  have : xl.head? = xl[0] := by
+    exact (List.head_eq_iff_head?_eq_some nonempty).mp this
 
-  have : ([xl[p-1]] ++ xl.dropLast).prod = 1 := by
-    sorry
-  #check xl.take 1
-  #check x.2.1
-  have : 2 ≤  x.1.length := by simp[x.2.1]; apply Nat.Prime.two_le hp
-  have : 0 < x.1.length := by linarith
-  have : 1 < xl.inits.length := by
-    rw [List.length_inits]
-    linarith
-  have nonempty : xl ≠ [] := by sorry
-  have : xl.inits[1] = xl.take 1 := by
-    apply List.getElem_inits
-
-  have : xl.take 1 = [xl[0]] := by
-    rw [← this]
-    rw [← List.singleton_eq, ← List.singleton_eq]
-    rw [this, List.head_eq_getElem_zero]
-
-  have : xl.take 1 = [xl.head nonempty] := by
-    rw [List.take_one]
-    rw [List.head_eq_getElem_zero]
-    have : List.head? = xl[0] := by sorry
-    rw [← List.singleton_eq, ← List.singleton_eq]
-    have : xl[0] = xl.head nonempty := by sorry
-    apply Set.singleton_eq_singleton_iff.mpr at this
-
-    --symm
-    rw[ List.ext_get_iff]
-    constructor
+  have : xl.rotate 1 = xl.tail ++ [xl[0]] := by
+    rw [List.rotate_eq_drop_append_take]
     simp
-    rintro n h₁ h₂
-    intro h
+    rw [List.take_one]
+    rw[this]
+    simp
+    linarith
 
-    apply List.head_eq_getElem_zero
+  rw[this, List.prod_append, ← a_eq_a_prod, b_a_eq_one]
 
-  have : xl.take 1 = [xl[0]] := by
-    rw [this, List.head_eq_getElem_zero]
 
-  --rw [← List.append_eq_has_append]
-
-  rw [comm_e]
 
 instance zmod_action : AddAction (ZMod p) (X G p) where
 

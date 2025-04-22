@@ -322,20 +322,39 @@ instance zmod_action : AddAction (ZMod p) (X G p) where
 
   zero_vadd x := by simp [· +ᵥ ·]
 
-lemma dsadsas (pdvd : p ∣ Fintype.card G) : IsPGroup p G := by
-  apply IsPGroup.iff_card.mpr
-  rcases pdvd with ⟨a,b⟩
-  use 1
-
-
-lemma aaaa : ∀ x : (X G p),
-  Nat.card (AddAction.orbit (ZMod p) x) = 1 ∨ Nat.card (AddAction.orbit (ZMod p) x) = p := by
+lemma orbit_card_eq_one_or_p : ∀ x : (X G p),
+  (AddAction.orbit (ZMod p) x).ncard = 1 ∨ (AddAction.orbit (ZMod p) x).ncard = p := by
   intro x
 
-  sorry
+  have : Fintype (AddAction.orbit (ZMod p) x) := by
+    refine Finite.fintype ?_
+    exact Finite.finite_addAction_orbit x
 
--- ∀ {G : Type u_3} [inst : Group G] [inst_1 : Fintype G] (p : ℕ) [hp : Fact (Nat.Prime p)],
--- p ∣ Fintype.card G → ∃ x, orderOf x = p
+  have : Fintype (AddAction.stabilizer (ZMod p) x) := by
+    exact Fintype.ofFinite ↥(AddAction.stabilizer (ZMod p) x)
+
+  have orb_stab : Fintype.card (AddAction.orbit (ZMod p) x) * Fintype.card (AddAction.stabilizer (ZMod p) x) = Fintype.card (ZMod p) := by
+    apply AddAction.card_orbit_mul_card_stabilizer_eq_card_addGroup (ZMod p) x
+
+  have : Fintype.card (ZMod p) = p := by
+    exact ZMod.card p
+
+  rw[this] at orb_stab
+
+  have : Nat.Prime (Fintype.card (AddAction.stabilizer (ZMod p) x) * Fintype.card (AddAction.orbit (ZMod p) x)) := by
+    rw [mul_comm, orb_stab]
+    apply hp.out
+
+  apply Nat.prime_mul_iff.mp at this
+
+  rcases this with ⟨_, hc⟩ | ⟨_, hc⟩
+
+  left
+  rwa[Fintype.card_eq_nat_card] at hc
+
+  right
+  rwa[hc, mul_one, Fintype.card_eq_nat_card] at orb_stab
+
 
 theorem Cauchy₂ (hp : Nat.Prime p) (pdvd : p ∣ Fintype.card G) :
   ∃ x : G, orderOf x = p := by

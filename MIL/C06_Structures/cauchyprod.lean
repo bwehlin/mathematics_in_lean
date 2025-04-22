@@ -256,8 +256,14 @@ lemma action_by_generator (x : X G p) (hp : Nat.Prime p) : List.rotate x 1 ∈ (
 
   let xl := x.1
 
-  have zero_lt : 0 < x.1.length := by sorry --linarith
-  have nonempty : x.1 ≠ [] := sorry
+  have nonempty : x.1 ≠ [] := by
+    refine List.ne_nil_of_length_pos ?_
+    rw[x.2.1]
+    apply Nat.Prime.pos hp
+
+  have zero_lt : 0 < x.1.length := by
+    refine List.length_pos.mpr ?_
+    apply nonempty
 
   let b := xl.tail.prod
   let a := xl[0]

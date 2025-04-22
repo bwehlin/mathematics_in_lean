@@ -248,6 +248,33 @@ lemma comm_e {a b : G} : a * b = 1 ↔ b * a = 1 := by
     apply mul_eq_one_iff_eq_inv.mp at h
     rw[h, mul_inv_cancel]
 
+lemma action_by_generator₂ (x : X G p) (hp : Nat.Prime p) : List.rotate x 1 ∈ (X G p) := by
+
+  constructor
+  · simp
+    apply x.2.1
+
+  let xl := x.1
+  have : 0 < x.1.length := by sorry --linarith
+  have : xl = [xl[0]] ++ xl.tail := by
+    sorry
+  have : xl.rotate 1 = xl.tail ++ [xl[0]] := by
+    rw [List.rotate_eq_drop_append_take]
+    sorry
+
+  --simp[X, xl]
+  rw[this]
+  --rw [List.rotate_eq_drop_append_take]
+
+
+
+
+  rw [← List.getElem_cyclicPermutations]
+
+  rw[ ←  List.cyclicPermutations_cons]
+
+  rw [List.head?_rotate]
+
 lemma action_by_generator (x : X G p) (hp : Nat.Prime p) : List.rotate x 1 ∈ (X G p) := by
   let xl := x.1
   #check x.2.1
@@ -257,6 +284,41 @@ lemma action_by_generator (x : X G p) (hp : Nat.Prime p) : List.rotate x 1 ∈ (
 
   simp[X, xl]
   rw [List.rotate_eq_drop_append_take]
+  have : p-1 < x.1.length := by sorry
+
+  have : xl[p-1]⁻¹ = xl.dropLast.prod := by
+    apply last_elem_eq_inv_of_prod
+    apply hp
+    apply x.2.1
+    constructor
+    apply x.2.1
+    apply x.2.2
+
+  have : xl[p-1] * xl.dropLast.prod = 1 := by
+    apply inv_eq_iff_mul_eq_one.mp
+    apply this
+
+  --have : xl[p-1] = [xl[p-1]].prod := by simp
+
+  have : [xl[p-1]].prod * xl.dropLast.prod = 1 := by
+    simp
+    apply this
+
+  have : xl.drop 1 ++ xl.take 1 =  xl.dropFirst ++ [xl[0]] := by
+    simp
+
+  -- take: Extracts the first n elements of xs, or the whole list if n is greater than xs.length.
+  -- drop: Removes the first n elements of the list xs. Returns the empty list if n is greater than the length of the list.
+  rw [← List.prod_append] at this
+
+  have :  xl.dropLast.prod * xl[p-1] = 1 := by
+    rw [comm_e]
+    apply this
+
+
+
+  have : ([xl[p-1]] ++ xl.dropLast).prod = 1 := by
+    sorry
   #check xl.take 1
   #check x.2.1
   have : 2 ≤  x.1.length := by simp[x.2.1]; apply Nat.Prime.two_le hp
@@ -267,10 +329,27 @@ lemma action_by_generator (x : X G p) (hp : Nat.Prime p) : List.rotate x 1 ∈ (
   have nonempty : xl ≠ [] := by sorry
   have : xl.inits[1] = xl.take 1 := by
     apply List.getElem_inits
+
   have : xl.take 1 = [xl[0]] := by
-    rw[← this]
-    rw [List.inits]
+    rw [← this]
+    rw [← List.singleton_eq, ← List.singleton_eq]
+    rw [this, List.head_eq_getElem_zero]
+
   have : xl.take 1 = [xl.head nonempty] := by
+    rw [List.take_one]
+    rw [List.head_eq_getElem_zero]
+    have : List.head? = xl[0] := by sorry
+    rw [← List.singleton_eq, ← List.singleton_eq]
+    have : xl[0] = xl.head nonempty := by sorry
+    apply Set.singleton_eq_singleton_iff.mpr at this
+
+    --symm
+    rw[ List.ext_get_iff]
+    constructor
+    simp
+    rintro n h₁ h₂
+    intro h
+
     apply List.head_eq_getElem_zero
 
   have : xl.take 1 = [xl[0]] := by

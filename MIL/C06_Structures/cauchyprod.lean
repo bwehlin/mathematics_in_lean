@@ -49,18 +49,6 @@ lemma prod_split {G: Type*} [Group G] (l₁ l₂ : List G) :
   (l₁ ++ l₂).prod = l₁.prod * l₂.prod := by
   simp
 
-
-lemma fold_list' {G: Type*} [Group G] (l : List G) (p : ℕ)  (hp : p > 1) (h : l.length = p) (f : G → G → G) :
-  List.foldl f 1 (List.drop 1 l ++ List.take 1 l) = List.foldl f 1 (List.drop 1 l) * List.foldl f 1 (List.take 1 l) := by
-
-  have : List.drop 1 l = l.tail := by simp
-  rw[this]
-  have : l ≠ [] := sorry
-  have : List.take 1 l = [l.head this] := by
-    sorry
-  simp
-  rw[←  List.prod]
-
 lemma last_elem_eq_inv_of_prod {G: Type*} [Fintype G] [Group G] (p : ℕ) (hp : Nat.Prime p) (l : List G) (hl : l.length = p):
   l.length = p ∧ l.prod = 1 → (l[p-1]'(by simp[hl]; linarith[Nat.Prime.one_lt hp]))⁻¹ = l.dropLast.prod := by
 

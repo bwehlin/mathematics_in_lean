@@ -255,12 +255,32 @@ lemma action_by_generator₂ (x : X G p) (hp : Nat.Prime p) : List.rotate x 1 �
     apply x.2.1
 
   let xl := x.1
+
   have : 0 < x.1.length := by sorry --linarith
+
+  let a := xl.dropLast.prod
+  let b := xl[0]
+
+  have : b = [b].prod := by simp
+
+  have : a * b = 1 := by
+    --simp[a]
+    rw [this]
+    rw [← List.prod_append]
+    simp only[b]
+
+
+
+
+    apply last_elem_eq_inv_of_prod
+
   have : xl = [xl[0]] ++ xl.tail := by
     sorry
   have : xl.rotate 1 = xl.tail ++ [xl[0]] := by
     rw [List.rotate_eq_drop_append_take]
     sorry
+
+  -- List.prod_inv_reverse
 
   --simp[X, xl]
   rw[this]

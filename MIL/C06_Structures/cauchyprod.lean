@@ -257,17 +257,27 @@ lemma action_by_generator₂ (x : X G p) (hp : Nat.Prime p) : List.rotate x 1 �
   let xl := x.1
 
   have : 0 < x.1.length := by sorry --linarith
+  have nonempty : x.1 ≠ [] := sorry
 
-  let a := xl.dropLast.prod
-  let b := xl[0]
+  let b := xl.tail.prod
+  let a := xl[0]
 
-  have : b = [b].prod := by simp
+  have : a = [a].prod := by simp
 
-  have : a * b = 1 := by
-    --simp[a]
+  have singleton_append_eq_cons (l : List G) : ∀ x : G, [x] ++ l = x :: l := by simp
+
+  have : a * b  = 1 := by
     rw [this]
     rw [← List.prod_append]
-    simp only[b]
+    simp only[a]
+    rw [← List.head_eq_getElem_zero nonempty]
+    rw [singleton_append_eq_cons]
+    rw [List.head_cons_tail]
+    apply x.2.2
+
+
+
+
 
 
 

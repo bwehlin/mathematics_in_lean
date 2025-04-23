@@ -212,20 +212,18 @@ lemma X_finite : Finite (X G p) := by
   have : Nat.card (X G p) ≠ 0 := by simp[this]
   apply Nat.finite_of_card_ne_zero this
 
-lemma p_div_gp (hg : Fintype.card G = p) : p ∣ (Fintype.card G)^(p-1) := by
-  rw [hg]
-  apply dvd_pow_self
-  have : p ≥ 2 := Nat.Prime.two_le hp.out
-  apply Nat.one_le_iff_ne_zero.mp
-  have : 0 < p := by linarith[Nat.Prime.two_le hp.out]
+lemma p_div_gp (pdiv : p ∣ Fintype.card G) : p ∣ (Fintype.card G)^(p-1) := by
+  rcases pdiv with ⟨n,hn⟩
+  rw[hn]
+  refine Dvd.dvd.pow ?_ ?_
+  simp
   have : p -  1 = p.totient := by
     apply Nat.totient_eq_iff_prime at this
     symm
     apply this.mpr
     apply hp.out
   rw[this]
-  apply Nat.totient_pos.mpr
-  assumption
+  exact Ne.symm (NeZero.ne' p.totient)
 
 lemma comm_e {a b : G} : a * b = 1 ↔ b * a = 1 := by
   constructor
@@ -359,18 +357,50 @@ instance : AddGroup (ZMod p) where
   neg_add_cancel := by simp
 
 instance : Group (Multiplicative (ZMod p)) where
-  inv_mul_cancel := by
-    simp
+  inv_mul_cancel := by simp
 
 lemma zmodp_mul_is_pgroup : IsPGroup p (Multiplicative (ZMod p)) := by
   apply IsPGroup.iff_card.mpr
   use 1
   simp
 
-lemma card_x_congr: Nat.card (X G p) ≡ Nat.card ↑(MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)) [MOD p] := by
-  have : Finite (X G p) := by apply X_finite
-  apply IsPGroup.card_modEq_card_fixedPoints
-  apply zmodp_mul_is_pgroup
+lemma card_x_congr: (Fintype.card G)^(p-1) ≡ Nat.card ↑(MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)) [MOD p] := by
+  have : Nat.card (X G p) ≡ Nat.card ↑(MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)) [MOD p] := by
+    have : Finite (X G p) := by apply X_finite
+    apply IsPGroup.card_modEq_card_fixedPoints
+    apply zmodp_mul_is_pgroup
+  rwa [card_x] at this
+
+lemma card_fixed (pdvd : p ∣ Fintype.card G) : p ∣ Nat.card ↑(MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)) := by
+
+  have : ∃ (k : ℕ), (Fintype.card G)^(p-1) = k * p := by
+    have : p ∣ (Fintype.card G)^(p-1) := by
+      apply p_div_gp
+      apply pdvd
+    rcases this with ⟨l,hl⟩
+    use l
+    rwa[mul_comm]
+
+  have zero_mod : (Fintype.card G)^(p-1) ≡ 0 [MOD p] := by
+    refine Nat.modEq_zero_iff_dvd.mpr ?_
+    apply p_div_gp
+    apply pdvd
+
+  have : (Fintype.card G)^(p-1) ≡ Nat.card ↑(MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)) [MOD p] := by
+    have : Nat.card (X G p) ≡ Nat.card ↑(MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)) [MOD p] := by
+      have : Finite (X G p) := by apply X_finite
+      apply IsPGroup.card_modEq_card_fixedPoints
+      apply zmodp_mul_is_pgroup
+    rwa [card_x] at this
+
+  have : Nat.card ↑(MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)) ≡ 0 [MOD p] := by
+    exact Nat.ModEq.symm (Nat.ModEq.trans (id (Nat.ModEq.symm zero_mod)) this)
+
+  exact Nat.dvd_of_mod_eq_zero this
+
+
+
+
 
 theorem Cauchy₂ (hp : Nat.Prime p) (pdvd : p ∣ Fintype.card G) :
   ∃ x : G, orderOf x = p := by

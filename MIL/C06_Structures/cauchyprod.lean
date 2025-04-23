@@ -417,6 +417,36 @@ lemma card_pos : Nonempty ↑(MulAction.fixedPoints (Multiplicative (ZMod p)) (X
 
   exact ne_of_mem_of_not_mem' this fun a ↦ a
 
+lemma card_gt (pdvd : p ∣ Fintype.card G) : Nat.card ↑(MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)) > 1 := by
+  have pdivc : p ∣ Nat.card ↑(MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)) := by
+    apply card_fixed;
+    apply pdvd
+  have : Nonempty ↑(MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)) := by
+    apply card_pos
+
+  have : Finite (X G p) := by apply X_finite
+  have : Finite ↑(MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)) := by
+    exact Subtype.finite
+
+  have : Nat.card ↑(MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)) > 0 := by
+    simp
+
+  have : ∃ (n : ℕ), Nat.card ↑(MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)) = n * p := by
+    exact exists_eq_mul_left_of_dvd pdivc
+
+  rcases this with ⟨n, hn⟩
+  have ngt : n > 0 := by
+    rw [hn] at this
+    exact Nat.pos_of_mul_pos_right this
+
+  have : n * p > 0 := by
+    exact Nat.lt_of_lt_of_eq this hn
+  have : p > 1 := by
+    apply Nat.Prime.one_lt hp.out
+  have : n * p > 1 := by
+    exact Right.one_lt_mul_of_le_of_lt ngt this
+
+  linarith
 
 
 

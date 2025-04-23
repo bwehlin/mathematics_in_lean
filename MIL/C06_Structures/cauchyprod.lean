@@ -399,9 +399,30 @@ lemma card_fixed (pdvd : p ∣ Fintype.card G) : p ∣ Nat.card ↑(MulAction.fi
   exact Nat.dvd_of_mod_eq_zero this
 
 
+lemma card_pos : Nonempty ↑(MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)) := by
+
+  refine nonempty_iff_ne_empty'.mpr ?_
+
+  let ones : (X G p) := ⟨List.replicate p 1, by simp[X]⟩
+  have ident_ones : ∀ n : ℕ, ones.1.rotate n = ones.1 := by
+    exact fun n ↦ List.rotate_replicate 1 p n
+
+  have : ones ∈ (MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)) := by
+    refine MulAction.mem_fixedPoints.mpr ?_
+    intro m
+    have : ∀ n : (ZMod p), n +ᵥ ones = ones := by
+      intro n
+      simp [· +ᵥ ·, zmod_action, ident_ones]
+    exact this (Multiplicative.toAdd m)
+
+  exact ne_of_mem_of_not_mem' this fun a ↦ a
+
+
+
 
 
 
 theorem Cauchy₂ (hp : Nat.Prime p) (pdvd : p ∣ Fintype.card G) :
   ∃ x : G, orderOf x = p := by
+
   sorry

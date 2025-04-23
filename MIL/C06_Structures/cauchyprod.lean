@@ -355,6 +355,22 @@ lemma orbit_card_eq_one_or_p : ∀ x : (X G p),
   right
   rwa[hc, mul_one, Fintype.card_eq_nat_card] at orb_stab
 
+instance : AddGroup (ZMod p) where
+  neg_add_cancel := by simp
+
+instance : Group (Multiplicative (ZMod p)) where
+  inv_mul_cancel := by
+    simp
+
+lemma zmodp_mul_is_pgroup : IsPGroup p (Multiplicative (ZMod p)) := by
+  apply IsPGroup.iff_card.mpr
+  use 1
+  simp
+
+lemma card_x_congr: Nat.card (X G p) ≡ Nat.card ↑(MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)) [MOD p] := by
+  have : Finite (X G p) := by apply X_finite
+  apply IsPGroup.card_modEq_card_fixedPoints
+  apply zmodp_mul_is_pgroup
 
 theorem Cauchy₂ (hp : Nat.Prime p) (pdvd : p ∣ Fintype.card G) :
   ∃ x : G, orderOf x = p := by

@@ -448,6 +448,82 @@ lemma card_gt (pdvd : p ∣ Fintype.card G) : Nat.card ↑(MulAction.fixedPoints
 
   linarith
 
+lemma fixed_constant (x : (X G p)) : x ∈ ↑(MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)) ↔ x = ⟨List.replicate p 1, by simp[X]⟩ := by
+  constructor
+  rintro hx
+
+  have act : ∀ (n : Multiplicative (ZMod p)), n • x = x := by
+    intro n
+    exact hx n
+
+  have : ∀ (m : ℕ), x.1.rotate m ∈ (X G p) := by
+    intro m
+    simp[X]
+    constructor
+    apply x.2.1
+    refine List.prod_rotate_eq_one_of_prod_eq_one ?_ m
+    apply x.2.2
+
+
+  have : ∀ (n : Multiplicative (ZMod p)), n • x = ⟨ x.1.rotate n.val,by apply this⟩  := by
+    intro n
+    exact rfl
+
+  have : ∀ (n : ℕ ), x.1.rotate n = x.1 := by
+    intro n
+    let m : ZMod p := n
+    specialize act m
+    specialize this m
+    rw[act] at this
+    symm
+
+    rw[ZMod.val_natCast] at this
+
+    --have peq : p = x.1.length := by symm; apply x.2.1
+    --have qq : n % p = n % x.1.length := sorry
+    --have asdf : x.1 ∈ (X G p) := sorry
+    have bb : x.1.rotate (n % p) = x.1 := sorry
+    --have cc : x.1 ∈ (X G p) := sorry
+    simp [bb] at this
+    simp[m] at this
+
+    simp [· +ᵥ ·, zmod_action] at this
+
+
+    symm at this
+    rw[List.rotate_mod x.1 n] at this
+    apply List.rotate_mod x.1 at this
+    let q : ZMod p := x.1.length
+    have qeq : q = p := by
+
+
+
+    apply List.rotate_mod peq at this
+    rw[peq] at this
+    rw[peq] at this
+    apply List.rotate_mod at this
+    rw[← this]
+    apply act at this
+
+  rw [← this] at act
+
+  --have : ∀ (n : ℕ), x.1.rotate n = (n % p)
+
+
+  apply List.rotate_eq_self_iff_eq_replicate at this
+  have : ∀ (n : ℕ), x.1.rotate n = x.1 := by
+    intro n
+    --specialize this ((ZMod p).mk n)
+    rw [← this]
+    specialize asdf with n
+    rw [← zmod_action]
+
+  rw [List.rotate_eq_self_iff_eq_replicate x.1]
+
+  refine SetCoe.ext ?_
+  by_contra hc
+
+
 
 
 

@@ -448,7 +448,8 @@ lemma card_gt (pdvd : p ∣ Fintype.card G) : Nat.card ↑(MulAction.fixedPoints
 
   linarith
 
-lemma fixed_constant (x : (X G p)) : x ∈ ↑(MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)) ↔ x = ⟨List.replicate p 1, by simp[X]⟩ := by
+-- For how to deal with the hypothesis `ha`: https://leanprover.zulipchat.com/#narrow/channel/270676-lean4/topic/Existence.20with.20'and'.20where.20one.20of.20the.20terms.20needs.20the.20other/with/514218988
+lemma fixed_constant (x : (X G p)) : x ∈ ↑(MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)) ↔ (∃ a : G, ∃ (ha: a^p=1), x = ⟨List.replicate p a, by simp[X]; apply ha⟩) := by
   constructor
   rintro hx
 
@@ -469,66 +470,113 @@ lemma fixed_constant (x : (X G p)) : x ∈ ↑(MulAction.fixedPoints (Multiplica
     intro n
     exact rfl
 
-  have : ∀ (n : ℕ ), x.1.rotate n = x.1 := by
+  have : ∀ (n : ℕ), x.1.rotate n = x.1 := by
     intro n
     let m : ZMod p := n
     specialize act m
     specialize this m
     rw[act] at this
     symm
-
     rw[ZMod.val_natCast] at this
 
-    --have peq : p = x.1.length := by symm; apply x.2.1
-    --have qq : n % p = n % x.1.length := sorry
-    --have asdf : x.1 ∈ (X G p) := sorry
-    have bb : x.1.rotate (n % p) = x.1 := sorry
-    --have cc : x.1 ∈ (X G p) := sorry
-    simp [bb] at this
-    simp[m] at this
+    have : x.1 = x.1.rotate (n % p) := by
+      nth_rw 1 [this]
 
-    simp [· +ᵥ ·, zmod_action] at this
+    have peq : p = x.1.length := by
+      symm
+      apply x.2.1
 
+    simp[peq] at this
+    rw[List.rotate_mod] at this
+    exact this
 
-    symm at this
-    rw[List.rotate_mod x.1 n] at this
-    apply List.rotate_mod x.1 at this
-    let q : ZMod p := x.1.length
-    have qeq : q = p := by
+  apply List.rotate_eq_self_iff_eq_replicate.mp at this
+  rcases this with ⟨a, ha⟩
 
+  have : a^p = 1 := by
+    by_contra h
+    push_neg at h
+    have : x.1.prod = a^p := by
+      rw[ha]
+      rw [List.prod_replicate]
+      simp[x.2.1]
+    have : x.1.prod ≠ 1 := by
+      rw[this]
+      exact h
+    have : x.1.prod = 1 := by
+      simp[x.2.2]
+    contradiction
 
+  use a
+  simp[this]
 
-    apply List.rotate_mod peq at this
-    rw[peq] at this
-    rw[peq] at this
-    apply List.rotate_mod at this
-    rw[← this]
-    apply act at this
+  intro hb
+  have : x.1.length = p := by apply x.2.1
+  rw[this] at ha
+  exact SetCoe.ext ha
 
-  rw [← this] at act
+  -- <-
 
-  --have : ∀ (n : ℕ), x.1.rotate n = (n % p)
-
-
-  apply List.rotate_eq_self_iff_eq_replicate at this
-  have : ∀ (n : ℕ), x.1.rotate n = x.1 := by
-    intro n
-    --specialize this ((ZMod p).mk n)
-    rw [← this]
-    specialize asdf with n
-    rw [← zmod_action]
-
-  rw [List.rotate_eq_self_iff_eq_replicate x.1]
-
-  refine SetCoe.ext ?_
-  by_contra hc
-
+  rintro ⟨a, ha⟩
+  sorry
+  --intro m
+  --specialize ha a
 
 
 
 
+section
+
+variable (G : Type*) [Group G]
+def Z : Set (List G) := { z : List G | 5 ∣ z.length }
+
+lemma attempt₁ (z : Z G) :
+  ∃ n : ℕ, (hn : 5 ∣ n)
+    → z = ⟨ List.replicate n 1, by simp[Z]; apply hn⟩
+  := by
+  /-
+  G : Type u_2
+  inst✝ : Group G
+  z : ↑(Z G)
+  ⊢ ∃ n, ∀ (hn : 5 ∣ n), z = ⟨List.replicate n 1, ⋯⟩
+  -/
+  sorry
+
+lemma attempt₂ (z : Z G) :
+  ∃ n : ℕ,
+  5 ∣ n ∧ z = ⟨ List.replicate n 1, by simp[Z]; sorry⟩
+  := by
+  /-
+  G : Type u_2
+  inst✝ : Group G
+  z : ↑(Z G)
+  ⊢ ∃ n, 5 ∣ n ∧ z = ⟨List.replicate n 1, ⋯⟩
+  -/
+  sorry
+
+lemma attempt₃ (z : Z G) :
+  ∃ n : ℕ,
+  ∃ (h : 5 ∣ n),
+  z = ⟨ List.replicate n 1, by simp[Z]; apply h⟩
+  := by
+  /-
+  G : Type u_2
+  inst✝ : Group G
+  z : ↑(Z G)
+  ⊢ ∃ n, 5 ∣ n ∧ z = ⟨List.replicate n 1, ⋯⟩
+  -/
+
+  sorry
 
 theorem Cauchy₂ (hp : Nat.Prime p) (pdvd : p ∣ Fintype.card G) :
   ∃ x : G, orderOf x = p := by
+
+  have : Nat.card ↑(MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)) > 1 := by
+    exact card_gt G p pdvd
+
+  have (x : (X G p)) : ∃ a : G, (ha: a^p=1) → x = ⟨List.replicate p a, by simp[X]; apply ha⟩ → x ∈ ↑(MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)) := by
+
+    rw [fixed_constant]
+
 
   sorry

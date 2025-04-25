@@ -13,6 +13,8 @@ import Mathlib.GroupTheory.PGroup
 
 noncomputable section
 
+set_option linter.unusedSectionVars false
+
 open Group
 open Function
 open Set

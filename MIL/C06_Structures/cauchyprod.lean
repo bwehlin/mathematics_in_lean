@@ -543,12 +543,39 @@ lemma fixed_constant (x : (X G p)) : x ∈ ↑(MulAction.fixedPoints (Multiplica
 theorem Cauchy₂ (hp : Nat.Prime p) (pdvd : p ∣ Fintype.card G) :
   ∃ x : G, orderOf x = p := by
 
-  have : Nat.card ↑(MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)) > 1 := by
+  have cpos : Nat.card ↑(MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)) > 1 := by
     exact card_gt G p pdvd
 
   have (x : (X G p)) :  x ∈ ↑(MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)) ↔ ∃ a : G, ∃ (ha: a^p=1), x = ⟨List.replicate p a, by simp[X]; apply ha⟩ := by
     rw [fixed_constant]
 
+  let ones : (X G p) := ⟨List.replicate p 1, by simp[X]⟩
+
+  have : ones ∈ (MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)) := by
+    simp[X, · +ᵥ ·, zmod_action]
+    sorry
 
 
-  sorry
+  have : ∃ x ∈ (MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)), x ≠ ones := by
+    exact exists_ne_of_one_lt_ncard cpos ones
+
+  rcases this with ⟨x, hx, x_ne_ones⟩
+  rw [fixed_constant] at hx
+  rcases hx with ⟨g, hgp, hgr⟩
+
+  use g
+  refine orderOf_eq_prime hgp ?_
+  have : 0 < x.1.length := sorry
+  have x0_eq_g : x.1[0] = g := by
+    simp[hgr]
+
+
+  have x0_ne_one : x.1[0] ≠ 1 := by
+    by_contra hc
+    simp only [ones] at x_ne_ones
+    rw[x0_eq_g] at hc
+    have : g ≠ 1 := sorry
+    contradiction
+
+  rw[x0_eq_g] at x0_ne_one
+  exact x0_ne_one

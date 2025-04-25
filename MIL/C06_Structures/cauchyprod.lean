@@ -509,64 +509,36 @@ lemma fixed_constant (x : (X G p)) : x ∈ ↑(MulAction.fixedPoints (Multiplica
 
   use a
   simp[this]
+  refine SetCoe.ext ?_
+  have : p = x.1.length := by symm; apply x.2.1
+  simp[this]
+  exact ha
 
-  intro hb
-  have : x.1.length = p := by apply x.2.1
-  rw[this] at ha
-  exact SetCoe.ext ha
 
   -- <-
 
-  rintro ⟨a, ha⟩
-  sorry
-  --intro m
-  --specialize ha a
+  rintro ⟨a, ha⟩ n
+  rcases ha with ⟨ha, hx⟩
+
+  have xin : x.1.rotate n.val ∈ X G p := by
+    simp[X]
+    constructor
+    apply x.2.1
+    refine List.prod_rotate_eq_one_of_prod_eq_one ?_ (ZMod.val n)
+    apply x.2.2
+
+  let m : ZMod p := n
+
+  have : n • x = m +ᵥ x := by
+    exact rfl
+
+  have : n • x = ⟨ x.1.rotate n.val, by apply xin⟩ := by
+    exact this
+
+  rw[this]
+  simp[hx]
 
 
-
-
-section
-
-variable (G : Type*) [Group G]
-def Z : Set (List G) := { z : List G | 5 ∣ z.length }
-
-lemma attempt₁ (z : Z G) :
-  ∃ n : ℕ, (hn : 5 ∣ n)
-    → z = ⟨ List.replicate n 1, by simp[Z]; apply hn⟩
-  := by
-  /-
-  G : Type u_2
-  inst✝ : Group G
-  z : ↑(Z G)
-  ⊢ ∃ n, ∀ (hn : 5 ∣ n), z = ⟨List.replicate n 1, ⋯⟩
-  -/
-  sorry
-
-lemma attempt₂ (z : Z G) :
-  ∃ n : ℕ,
-  5 ∣ n ∧ z = ⟨ List.replicate n 1, by simp[Z]; sorry⟩
-  := by
-  /-
-  G : Type u_2
-  inst✝ : Group G
-  z : ↑(Z G)
-  ⊢ ∃ n, 5 ∣ n ∧ z = ⟨List.replicate n 1, ⋯⟩
-  -/
-  sorry
-
-lemma attempt₃ (z : Z G) :
-  ∃ n : ℕ,
-  ∃ (h : 5 ∣ n),
-  z = ⟨ List.replicate n 1, by simp[Z]; apply h⟩
-  := by
-  /-
-  G : Type u_2
-  inst✝ : Group G
-  z : ↑(Z G)
-  ⊢ ∃ n, 5 ∣ n ∧ z = ⟨List.replicate n 1, ⋯⟩
-  -/
-
-  sorry
 
 theorem Cauchy₂ (hp : Nat.Prime p) (pdvd : p ∣ Fintype.card G) :
   ∃ x : G, orderOf x = p := by

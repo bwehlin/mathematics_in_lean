@@ -11,6 +11,11 @@ import Mathlib.GroupTheory.PGroup
 
 noncomputable section
 
+-- Note: I have used leansearch.net extensively to figure out theorem names etc.
+-- Since this maybe counts as using AI, I wanted to at least disclose it. `apply?`
+-- has also been very helpful, except in `theorem Cauchy₂` where Lean simply
+-- suggests to use the Mathlib proof :)
+
 set_option linter.unusedSectionVars false
 
 open Group
@@ -73,7 +78,8 @@ lemma last_elem_eq_inv_of_prod {G: Type*} [Fintype G] [Group G] (p : ℕ) (hp : 
   rw [ ← div_eq_iff_eq_mul, div_eq_mul_inv, inv_inv]
   exact xmu
 
-
+-- Thanks to Hampus Nyberg for helping with untangling the (X G p) syntax and
+-- pulling out the pieces (x.2.1, etc.)
 def f : X G p → Y G p := fun x => ⟨ x.val.dropLast, by simp[Y]; rw [x.property.1] ⟩
 
 lemma f_inj  : Injective (f G p)  := by
@@ -83,7 +89,6 @@ lemma f_inj  : Injective (f G p)  := by
   let lx := x.1
   let ly := y.1
 
-  -- TODO: This should be refactored to avoid repetition, but it works
   have : x.1 = y.1 := by
     have hx1 := x.2.1
     have hx2 := x.2.2
@@ -220,6 +225,10 @@ lemma p_div_gp (pdiv : p ∣ Fintype.card G) : p ∣ (Fintype.card G)^(p-1) := b
   rw[this]
   exact Ne.symm (NeZero.ne' p.totient)
 
+-- Next, we will define an action of (ZMod p) on (X G p) by n +ᵥ x = x.rotate n.val,
+-- i.e., a leftwards rotation by n. We do this by definining the action by the generator,
+-- 1, and then inductively for n.
+
 lemma comm_e {a b : G} : a * b = 1 ↔ b * a = 1 := by
   constructor
   · intro h
@@ -319,10 +328,19 @@ instance : AddGroup (ZMod p) where
 instance : Group (Multiplicative (ZMod p)) where
   inv_mul_cancel := by simp
 
+-- Showing that (ZMod p) is a p-group lets us argue about the fixed points of the
+-- action on (X G p). Mathlib only has PGroups for MulActions, so we will turn
+-- the additive structure on (ZMod p) into the corresponding multiplicative
+-- structure using Multiplicative.
+
 lemma zmodp_mul_is_pgroup : IsPGroup p (Multiplicative (ZMod p)) := by
   apply IsPGroup.iff_card.mpr
   use 1
   simp
+
+-- The key result here is that |X| ≡ |{fixed points of the action}| mod p.
+-- (Thanks Kim Kiehn for pointing this out!). Because p is prime, we can arrive
+-- at a slightly stronger lemma:
 
 lemma card_fixed (pdvd : p ∣ Fintype.card G) : p ∣ Nat.card ↑(MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)) := by
 
@@ -352,6 +370,8 @@ lemma card_fixed (pdvd : p ∣ Fintype.card G) : p ∣ Nat.card ↑(MulAction.fi
   exact Nat.dvd_of_mod_eq_zero this
 
 
+-- Since (1,...,1) ∈ fixedPoints, we have |fixedPoints| ≠ ∅
+
 lemma card_pos : Nonempty ↑(MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)) := by
 
   refine nonempty_iff_ne_empty'.mpr ?_
@@ -369,6 +389,9 @@ lemma card_pos : Nonempty ↑(MulAction.fixedPoints (Multiplicative (ZMod p)) (X
     exact this (Multiplicative.toAdd m)
 
   exact ne_of_mem_of_not_mem' this fun a ↦ a
+
+-- Now, using that p is prime, we see that |fixedPoints| > 1, meaning that there
+-- is at least one x ∈ (X G p) that is not equal to (1,...,1).
 
 lemma card_gt (pdvd : p ∣ Fintype.card G) : Nat.card ↑(MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)) > 1 := by
   have pdivc : p ∣ Nat.card ↑(MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)) := by
@@ -400,6 +423,8 @@ lemma card_gt (pdvd : p ∣ Fintype.card G) : Nat.card ↑(MulAction.fixedPoints
     exact Right.one_lt_mul_of_le_of_lt ngt this
 
   linarith
+
+-- Next, let's prove that x ∈ fixedPoints ↔ x = (a,...,a) for some (a : G).
 
 -- For how to deal with the hypothesis `ha`: https://leanprover.zulipchat.com/#narrow/channel/270676-lean4/topic/Existence.20with.20'and'.20where.20one.20of.20the.20terms.20needs.20the.20other/with/514218988
 lemma fixed_constant (x : (X G p)) : x ∈ ↑(MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)) ↔ (∃ a : G, ∃ (ha: a^p=1), x = ⟨List.replicate p a, by simp[X]; apply ha⟩) := by
@@ -491,6 +516,7 @@ lemma fixed_constant (x : (X G p)) : x ∈ ↑(MulAction.fixedPoints (Multiplica
   rw[this]
   simp[hx]
 
+-- x = (a,...,a) ∧ x = (b,...,b) ↔ a ≠ b
 lemma list_repl (a b : G) (x : List G) (hx : x = List.replicate p a) (hb : x ≠ List.replicate p b) : a ≠ b := by
   contrapose! hb
   have : List.replicate p a = List.replicate p b ↔ a = b := by
@@ -499,19 +525,21 @@ lemma list_repl (a b : G) (x : List G) (hx : x = List.replicate p a) (hb : x ≠
   rw[← this] at hb
   rwa [hb] at hx
 
+-- We are now ready to prove the theorem! Remember that p is assumed to be prime
+-- in the section-wide hypothesis [hp : Fact p.Prime]
 theorem Cauchy₂ (pdvd : p ∣ Fintype.card G) :
   ∃ x : G, orderOf x = p := by
 
   have cpos : Nat.card ↑(MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)) > 1 := by
     exact card_gt G p pdvd
 
-  have (x : (X G p)) :  x ∈ ↑(MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)) ↔ ∃ a : G, ∃ (ha: a^p=1), x = ⟨List.replicate p a, by simp[X]; apply ha⟩ := by
-    rw [fixed_constant]
-
   let ones : (X G p) := ⟨List.replicate p 1, by simp[X]⟩
 
   have ident_ones : ∀ n : ℕ, ones.1.rotate n = ones.1 := by
     exact fun n ↦ List.rotate_replicate 1 p n
+
+  -- We establish that ones:=(1,...,1) ∈ fixedPoints and that there is some
+  -- x:=(a,...,a) ∈ fixedPoints but that x ≠ ones
 
   have : ones ∈ (MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)) := by
     simp[X, · +ᵥ ·, zmod_action]
@@ -526,7 +554,7 @@ theorem Cauchy₂ (pdvd : p ∣ Fintype.card G) :
   rcases hx with ⟨g, hgp, hgr⟩
 
   use g
-  refine orderOf_eq_prime hgp ?_
+  refine orderOf_eq_prime hgp ?_ -- for prime order it is enough to show that g ≠ 1
 
   simp only [ones] at x_ne_ones
   refine Ne.symm (list_repl G p 1 g (List.replicate p 1) ?_ ?_)

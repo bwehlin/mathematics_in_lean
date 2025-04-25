@@ -9,8 +9,6 @@ import Mathlib.Data.Set.Finite.Basic
 import Mathlib.Data.Fintype.BigOperators
 import Mathlib.GroupTheory.PGroup
 
-#check Group
-
 noncomputable section
 
 set_option linter.unusedSectionVars false
@@ -18,6 +16,14 @@ set_option linter.unusedSectionVars false
 open Group
 open Function
 open Set
+
+variable (G : Type*) [Group G] [Fintype G]
+variable (p : ℕ) [hp : Fact p.Prime]
+def X : Set (List G) := { x : List G | x.length = p ∧ x.prod = 1}
+def Y : Set (List G) := { x : List G | x.length = p - 1}
+
+-- First goal is to establish that X and Y have the same cardinality.
+-- The cardinality of Y is easily seen to be G^(p-1).
 
 lemma fold_list {G: Type*} [Group G] (l : List G) (p : ℕ)  (hp : p > 1) (h : l.length = p) (f : G → G → G) :
   f (l.dropLast.foldl f 1) l[p-1] = l.foldl f 1 := by
@@ -46,11 +52,6 @@ lemma fold_list {G: Type*} [Group G] (l : List G) (p : ℕ)  (hp : p > 1) (h : l
   nth_rw 1 [this]
   rw[List.foldl_concat f 1  l[p-1] l.dropLast]
 
-
-lemma prod_split {G: Type*} [Group G] (l₁ l₂ : List G) :
-  (l₁ ++ l₂).prod = l₁.prod * l₂.prod := by
-  simp
-
 lemma last_elem_eq_inv_of_prod {G: Type*} [Fintype G] [Group G] (p : ℕ) (hp : Nat.Prime p) (l : List G) (hl : l.length = p):
   l.length = p ∧ l.prod = 1 → (l[p-1]'(by simp[hl]; linarith[Nat.Prime.one_lt hp]))⁻¹ = l.dropLast.prod := by
 
@@ -72,14 +73,8 @@ lemma last_elem_eq_inv_of_prod {G: Type*} [Fintype G] [Group G] (p : ℕ) (hp : 
   rw [ ← div_eq_iff_eq_mul, div_eq_mul_inv, inv_inv]
   exact xmu
 
-variable (G : Type*) [Group G] [Fintype G]
-variable (p : ℕ) [hp : Fact p.Prime]
-def X : Set (List G) := { x : List G | x.length = p ∧ x.prod = 1}
-def Y : Set (List G) := { x : List G | x.length = p - 1}
 
 def f : X G p → Y G p := fun x => ⟨ x.val.dropLast, by simp[Y]; rw [x.property.1] ⟩
-
-#check last_elem_eq_inv_of_prod
 
 lemma f_inj  : Injective (f G p)  := by
   rintro x y h
@@ -287,8 +282,6 @@ lemma action_by_generator (x : X G p) (hp : Nat.Prime p) : List.rotate x 1 ∈ (
 
   rw[this, List.prod_append, ← a_eq_a_prod, b_a_eq_one]
 
-
-
 instance zmod_action : AddAction (ZMod p) (X G p) where
 
   vadd n x := ⟨x.1.rotate n.val, by
@@ -320,39 +313,6 @@ instance zmod_action : AddAction (ZMod p) (X G p) where
 
   zero_vadd x := by simp [· +ᵥ ·]
 
-lemma orbit_card_eq_one_or_p : ∀ x : (X G p),
-  (AddAction.orbit (ZMod p) x).ncard = 1 ∨ (AddAction.orbit (ZMod p) x).ncard = p := by
-  intro x
-
-  have : Fintype (AddAction.orbit (ZMod p) x) := by
-    refine Finite.fintype ?_
-    exact Finite.finite_addAction_orbit x
-
-  have : Fintype (AddAction.stabilizer (ZMod p) x) := by
-    exact Fintype.ofFinite ↥(AddAction.stabilizer (ZMod p) x)
-
-  have orb_stab : Fintype.card (AddAction.orbit (ZMod p) x) * Fintype.card (AddAction.stabilizer (ZMod p) x) = Fintype.card (ZMod p) := by
-    apply AddAction.card_orbit_mul_card_stabilizer_eq_card_addGroup (ZMod p) x
-
-  have : Fintype.card (ZMod p) = p := by
-    exact ZMod.card p
-
-  rw[this] at orb_stab
-
-  have : Nat.Prime (Fintype.card (AddAction.stabilizer (ZMod p) x) * Fintype.card (AddAction.orbit (ZMod p) x)) := by
-    rw [mul_comm, orb_stab]
-    apply hp.out
-
-  apply Nat.prime_mul_iff.mp at this
-
-  rcases this with ⟨_, hc⟩ | ⟨_, hc⟩
-
-  left
-  rwa[Fintype.card_eq_nat_card] at hc
-
-  right
-  rwa[hc, mul_one, Fintype.card_eq_nat_card] at orb_stab
-
 instance : AddGroup (ZMod p) where
   neg_add_cancel := by simp
 
@@ -363,13 +323,6 @@ lemma zmodp_mul_is_pgroup : IsPGroup p (Multiplicative (ZMod p)) := by
   apply IsPGroup.iff_card.mpr
   use 1
   simp
-
-lemma card_x_congr: (Fintype.card G)^(p-1) ≡ Nat.card ↑(MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)) [MOD p] := by
-  have : Nat.card (X G p) ≡ Nat.card ↑(MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)) [MOD p] := by
-    have : Finite (X G p) := by apply X_finite
-    apply IsPGroup.card_modEq_card_fixedPoints
-    apply zmodp_mul_is_pgroup
-  rwa [card_x] at this
 
 lemma card_fixed (pdvd : p ∣ Fintype.card G) : p ∣ Nat.card ↑(MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)) := by
 

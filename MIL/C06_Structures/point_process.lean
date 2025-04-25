@@ -28,6 +28,7 @@ def PointMeasure (xs : List α) : Measure α where
             intro x xmem
 
 
-    iUnion_nat := sorry
+    iUnion_nat := by
+        simp
     m_iUnion := sorry
     trim_le := sorry

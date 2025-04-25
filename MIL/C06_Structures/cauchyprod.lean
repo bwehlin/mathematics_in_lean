@@ -538,9 +538,15 @@ lemma fixed_constant (x : (X G p)) : x ∈ ↑(MulAction.fixedPoints (Multiplica
   rw[this]
   simp[hx]
 
+lemma list_repl (a b : G) (x : List G) (hx : x = List.replicate p a) (hb : x ≠ List.replicate p b) : a ≠ b := by
+  contrapose! hb
+  have : List.replicate p a = List.replicate p b ↔ a = b := by
+    apply List.replicate_right_inj
+    apply Nat.Prime.ne_zero hp.out
+  rw[← this] at hb
+  rwa [hb] at hx
 
-
-theorem Cauchy₂ (hp : Nat.Prime p) (pdvd : p ∣ Fintype.card G) :
+theorem Cauchy₂ (pdvd : p ∣ Fintype.card G) :
   ∃ x : G, orderOf x = p := by
 
   have cpos : Nat.card ↑(MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)) > 1 := by
@@ -551,10 +557,13 @@ theorem Cauchy₂ (hp : Nat.Prime p) (pdvd : p ∣ Fintype.card G) :
 
   let ones : (X G p) := ⟨List.replicate p 1, by simp[X]⟩
 
+  have ident_ones : ∀ n : ℕ, ones.1.rotate n = ones.1 := by
+    exact fun n ↦ List.rotate_replicate 1 p n
+
   have : ones ∈ (MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)) := by
     simp[X, · +ᵥ ·, zmod_action]
-    sorry
-
+    intro n
+    simp [ident_ones]
 
   have : ∃ x ∈ (MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)), x ≠ ones := by
     exact exists_ne_of_one_lt_ncard cpos ones
@@ -565,17 +574,12 @@ theorem Cauchy₂ (hp : Nat.Prime p) (pdvd : p ∣ Fintype.card G) :
 
   use g
   refine orderOf_eq_prime hgp ?_
-  have : 0 < x.1.length := sorry
-  have x0_eq_g : x.1[0] = g := by
-    simp[hgr]
 
-
-  have x0_ne_one : x.1[0] ≠ 1 := by
-    by_contra hc
-    simp only [ones] at x_ne_ones
-    rw[x0_eq_g] at hc
-    have : g ≠ 1 := sorry
-    contradiction
-
-  rw[x0_eq_g] at x0_ne_one
-  exact x0_ne_one
+  simp only [ones] at x_ne_ones
+  refine Ne.symm (list_repl G p 1 g (List.replicate p 1) ?_ ?_)
+  rw[hgr] at x_ne_ones
+  symm
+  rw[hgr] at x_ne_ones
+  simp at x_ne_ones
+  simp
+  exact x_ne_ones

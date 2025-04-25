@@ -218,9 +218,7 @@ lemma p_div_gp (pdiv : p ∣ Fintype.card G) : p ∣ (Fintype.card G)^(p-1) := b
   refine Dvd.dvd.pow ?_ ?_
   simp
   have : p -  1 = p.totient := by
-    apply Nat.totient_eq_iff_prime at this
-    symm
-    apply this.mpr
+    refine Eq.symm (Nat.totient_prime ?_)
     apply hp.out
   rw[this]
   exact Ne.symm (NeZero.ne' p.totient)
@@ -546,9 +544,9 @@ theorem Cauchy₂ (hp : Nat.Prime p) (pdvd : p ∣ Fintype.card G) :
   have : Nat.card ↑(MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)) > 1 := by
     exact card_gt G p pdvd
 
-  have (x : (X G p)) : ∃ a : G, (ha: a^p=1) → x = ⟨List.replicate p a, by simp[X]; apply ha⟩ → x ∈ ↑(MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)) := by
-
+  have (x : (X G p)) :  x ∈ ↑(MulAction.fixedPoints (Multiplicative (ZMod p)) (X G p)) ↔ ∃ a : G, ∃ (ha: a^p=1), x = ⟨List.replicate p a, by simp[X]; apply ha⟩ := by
     rw [fixed_constant]
+
 
 
   sorry

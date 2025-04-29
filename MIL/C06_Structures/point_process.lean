@@ -23,12 +23,17 @@ def PointMeasure (xs : List α) : Measure α where
     measureOf s := (xs.map (s.indicator fun _ ↦ 1)).sum
     empty := by simp
     mono := by
-        intro s₁ s₂ hsub
-        have : ∀ x ∈ xs, (s₁.indicator fun _ ↦ 1) x ≤ (s₂.indicator fun _ ↦ 1) x := by
-            intro x xmem
-
+        intro _ _ hsub
+        refine List.sum_le_sum ?_
+        intro _ _
+        refine Set.indicator_le_indicator_apply_of_subset hsub ?_
+        exact zero_le_one' ENNReal
 
     iUnion_nat := by
+        intro f hpwd
         simp
+
+        simp
+
     m_iUnion := sorry
     trim_le := sorry

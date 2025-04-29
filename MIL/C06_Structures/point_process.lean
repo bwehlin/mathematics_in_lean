@@ -31,18 +31,27 @@ theorem dirac_of_singleton_eq_zero_or_one {a x : α} (hm : MeasurableSet (Set.si
     rw [Measure.dirac_apply' a hm]
     exact indicator_eq_zero_or_self (Set.singleton x) 1 a
 
+theorem dirac_on_singleton_of_singleton_eq_one {x : α} (hm : MeasurableSet (Set.singleton x)) :
+    Measure.dirac x (Set.singleton x) = (1 : ENNReal) := by
+    rw [Measure.dirac_apply' x hm]
+    exact (indicator_eq_one_iff_mem ENNReal).mpr rfl
+
+theorem dirac_on_singleton_iff {a x : α} (hm : MeasurableSet (Set.singleton x)) :
+    Measure.dirac a (Set.singleton x) = (1 : ENNReal) ↔ a = x := by
+    constructor
+    ·   intro h
+        rwa [Measure.dirac_apply' a hm, indicator_eq_one_iff_mem] at h
+    ·   intro h
+        rw[h]
+        apply dirac_on_singleton_of_singleton_eq_one
+        apply hm
+
 theorem dirac_of_singleton_eq_one_if_ne_zero {a x : α} (hm : MeasurableSet (Set.singleton x)) :
     Measure.dirac a (Set.singleton x) ≠ 0 → Measure.dirac a (Set.singleton x) = 1 := by
     intro h
     refine dirac_apply_of_mem ?_
     rw [Measure.dirac_apply' a hm] at h
     exact mem_of_indicator_ne_zero h
-
-theorem asdf {S : Set ℕ} {f : S → ℕ} : False := by
-    #check f
-    let y := f '' univ
-
-    sorry
 
 theorem is_simple_if_injective {S : Set ℕ} {f : S → α} (hf: Injective f) (hm : ∀ x : α, MeasurableSet (Set.singleton x)) : IsSimplePointMeasure f := by
     intro x
@@ -56,6 +65,8 @@ theorem is_simple_if_injective {S : Set ℕ} {f : S → α} (hf: Injective f) (h
     #check S
     #check ↑S
     by_cases hx : x ∈ (f '' univ)
+
+
 
     have : ∃ i, f i = x := by
         refine SetCoe.exists.mpr ?_
@@ -71,6 +82,16 @@ theorem is_simple_if_injective {S : Set ℕ} {f : S → α} (hf: Injective f) (h
     simp [PointMeasure]
     right
 
+    have : ∀ j, ∀ (h: j ≠ i), (dirac (f j)) (Set.singleton x) = (0 : ENNReal) := by
+        intro j hj
+        contrapose! hj
+        apply dirac_of_singleton_eq_one_if_ne_zero at hj
+        have : (dirac (f i)) (Set.singleton x) = (1 : ENNReal) := by
+            rw[hfi]
+            apply dirac_on_singleton_of_singleton_eq_one
+            apply hm
+
+
     have : dirac (f i) (Set.singleton x) = 1 := by
         rw[hfi]
         exact dirac_apply_of_mem rfl
@@ -78,6 +99,9 @@ theorem is_simple_if_injective {S : Set ℕ} {f : S → α} (hf: Injective f) (h
     have : ∀ j, ∀ (h : j ≠ i), dirac (f j) (Set.singleton x) = 0 := by
         intro j
         contrapose!
+        intro hj
+        apply dirac_of_singleton_eq_one_if_ne_zero at hj
+
 
 
 

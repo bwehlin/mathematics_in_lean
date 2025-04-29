@@ -20,23 +20,5 @@ variable {α β δ : Type*} [MeasurableSpace α] [MeasurableSpace β] {s : Set �
 
 noncomputable def PointMeasure (f : ℕ → α) : Measure α := Measure.sum (fun i ↦ Measure.dirac (f i))
 
---noncomputable def PointMeasure {ι : Type*} [Countable ι] (f : ι → Measure α) := Measure.sum f
-
-example asdf := by
-    let f : ℕ → α := sorry
-    #check PointMeasure f
-    #check PointMeasure f (Set.singleton a)
-    #check Measure.dirac a (Set.singleton a)
-
-
-
-def IsSimplePointMeasure (f : ℕ → Measure α) : Prop :=
-    --∀ x : α, Measure.dirac (Set.singleton x) = 0
-    ∀ x : α, PointMeasure f (Set.singleton x) = 0
-
-
-class IsPointMeasure (μ : Measure α) : Prop where
-    is_countable_sum {ι : Type*} [Countable ι] (f : ι → Measure α) : μ = PointMeasure f
-
-class IsSimplePointMeasure (μ : Measure α) [IsPointMeasure μ] : Prop where
-    unit_mass :
+def IsSimplePointMeasure (f : ℕ → α) : Prop :=
+    ∀ x : α, PointMeasure f (Set.singleton x) = 0 ∨ PointMeasure f (Set.singleton x) = 1

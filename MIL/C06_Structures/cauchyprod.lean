@@ -11,6 +11,10 @@ import Mathlib.GroupTheory.PGroup
 
 noncomputable section
 
+-- This proof is based chiefly on `Proof 2` on Wikipedia (`https://en.wikipedia.org/wiki/Cauchy%27s_theorem_(group_theory)` 2025-04-29)
+-- However, we use a different approach towards the end where instead of "counting the elements of X by orbits...",
+-- we use a congruence lemma (see further down).
+
 -- Note: I have used leansearch.net extensively to figure out theorem names etc.
 -- Since this maybe counts as using AI, I wanted to at least disclose it. `apply?`
 -- has also been very helpful, except in `theorem Cauchy₂` where Lean simply

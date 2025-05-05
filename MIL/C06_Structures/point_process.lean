@@ -17,20 +17,12 @@ open Set
 
 variable {α β δ : Type*} [MeasurableSpace α] [MeasurableSpace β] {s : Set α} {a : α}
 
--- sample space α
-
---def RandomMeasure : α → β :=
-
 noncomputable def PointMeasure {S : Set ℕ} (f : S → α) : Measure α := Measure.sum (fun i ↦ Measure.dirac (f i))
 
 def IsSimplePointMeasure {S : Set ℕ} (f : S → α)  : Prop :=
     ∀ x : α, PointMeasure f {x} = 0 ∨ PointMeasure f {x} = 1
 
-theorem dirac_of_singleton_eq_zero_or_one {a x : α} (hm : MeasurableSet {x}) :
-    Measure.dirac a {x} = (0 : ENNReal) ∨ Measure.dirac a {x} = (1 : ENNReal) := by
-    rw [Measure.dirac_apply' a hm]
-    exact indicator_eq_zero_or_self {x} 1 a
-
+@[simp]
 theorem dirac_on_singleton_of_singleton_eq_one {x : α} (hm : MeasurableSet {x}) :
     Measure.dirac x {x} = (1 : ENNReal) := by
     rw [Measure.dirac_apply' x hm]
@@ -46,15 +38,30 @@ theorem dirac_on_singleton_iff {a x : α} (hm : MeasurableSet {x}) :
         apply dirac_on_singleton_of_singleton_eq_one
         apply hm
 
-theorem dirac_of_singleton_eq_one_if_ne_zero {a x : α} (hm : MeasurableSet {x}) :
-    Measure.dirac a {x} ≠ 0 → Measure.dirac a {x} = 1 := by
+@[simp]
+theorem dirac_ne_zero_eq_one {a : α} {s : Set α} (hm: MeasurableSet s) : dirac a s ≠ 0 → dirac a s = 1 := by
+    rw[Measure.dirac_apply']
     intro h
-    refine dirac_apply_of_mem ?_
-    rw [Measure.dirac_apply' a hm] at h
-    exact mem_of_indicator_ne_zero h
+    simp[Set.indicator] at *
+    exact h
+    exact hm
 
-theorem sum_zeroes {S : Set ℕ} (f : S → ENNReal) (hf : ∀ i, f i = 0) : ∑' (i : S), f i = 0 := by
-    exact ENNReal.tsum_eq_zero.mpr hf
+@[simp]
+theorem dirac_ne_one_eq_zero {a : α} {s : Set α} (hm: MeasurableSet s) : dirac a s ≠ 1 → dirac a s = 0 := by
+    rw[Measure.dirac_apply']
+    intro h
+    simp[Set.indicator] at *
+    exact h
+    exact hm
+
+theorem point_measure_self_apply_gt {S : Set ℕ} {f : S → α} (hm : ∀ x : α, MeasurableSet {x}) :
+    ∀ (i : S), PointMeasure f {f i} > 0 := by
+    intro i
+    simp[PointMeasure]
+    rw [MeasureTheory.Measure.sum_apply, ENNReal.tsum_eq_add_tsum_ite i, dirac_on_singleton_of_singleton_eq_one]
+    simp
+    apply hm
+    apply hm
 
 theorem is_simple_if_injective {S : Set ℕ} {f : S → α} (hf: Injective f) (hm : ∀ x : α, MeasurableSet {x}) : IsSimplePointMeasure f := by
     intro x
@@ -81,7 +88,7 @@ theorem is_simple_if_injective {S : Set ℕ} {f : S → α} (hf: Injective f) (h
             exact hj
         contrapose! this
         rw[hi]
-        apply dirac_of_singleton_eq_one_if_ne_zero at this
+        apply dirac_ne_zero_eq_one at this
         rw [dirac_on_singleton_iff] at this
         exact this
         repeat apply hm
@@ -91,7 +98,7 @@ theorem is_simple_if_injective {S : Set ℕ} {f : S → α} (hf: Injective f) (h
         have : ∀ (i : S), dirac (f i) {x} = 0 := by
             intro i
             contrapose! hx
-            apply dirac_of_singleton_eq_one_if_ne_zero at hx
+            apply dirac_ne_zero_eq_one at hx
             rw [dirac_on_singleton_iff] at hx
             refine (mem_image f univ x).mpr ?_
             use i
@@ -103,15 +110,8 @@ theorem is_simple_if_injective {S : Set ℕ} {f : S → α} (hf: Injective f) (h
         specialize this ⟨a, as⟩
         exact this
 
-theorem point_measure_self_apply_gt {S : Set ℕ} {f : S → α} (hm : ∀ x : α, MeasurableSet {x}) : ∀ (i : S), PointMeasure f {f i} > 0 := by
-    intro i
-    simp[PointMeasure]
-    rw [MeasureTheory.Measure.sum_apply, ENNReal.tsum_eq_add_tsum_ite i, dirac_on_singleton_of_singleton_eq_one]
-    simp
-    apply hm
-    apply hm
-
-theorem is_simple_if_injective_iff {S : Set ℕ} {f : S → α} (hm : ∀ x : α, MeasurableSet {x}) : Injective f ↔ IsSimplePointMeasure f := by
+theorem is_simple_if_injective_iff {S : Set ℕ} {f : S → α} (hm : ∀ x : α, MeasurableSet {x}) :
+    Injective f ↔ IsSimplePointMeasure f := by
     constructor
     ·
         intro hf

@@ -102,3 +102,60 @@ theorem is_simple_if_injective {S : Set ℕ} {f : S → α} (hf: Injective f) (h
         intro a as
         specialize this ⟨a, as⟩
         exact this
+
+theorem point_measure_self_apply_gt {S : Set ℕ} {f : S → α} (hm : ∀ x : α, MeasurableSet {x}) : ∀ (i : S), PointMeasure f {f i} > 0 := by
+    intro i
+    simp[PointMeasure]
+    rw [MeasureTheory.Measure.sum_apply, ENNReal.tsum_eq_add_tsum_ite i, dirac_on_singleton_of_singleton_eq_one]
+    simp
+    apply hm
+    apply hm
+
+theorem is_simple_if_injective_iff {S : Set ℕ} {f : S → α} (hm : ∀ x : α, MeasurableSet {x}) : Injective f ↔ IsSimplePointMeasure f := by
+    constructor
+    ·
+        intro hf
+        apply is_simple_if_injective
+        apply hf
+        apply hm
+
+    simp[IsSimplePointMeasure]
+    intros hsimp i₁ i₂ h
+    by_contra hc
+
+    have : dirac (f i₁) {f i₁} = 1 := by exact
+      dirac_on_singleton_of_singleton_eq_one (hm (f i₁))
+
+    have ge_two : PointMeasure f {f i₁} ≥ 2 := by
+        simp[PointMeasure]
+        rw [MeasureTheory.Measure.sum_apply, ENNReal.tsum_eq_add_tsum_ite i₁]
+        simp
+        rw [ENNReal.tsum_eq_add_tsum_ite i₂]
+        push_neg at hc
+        symm at hc
+        simp[hc]
+        rw [← h, this, ← add_assoc, one_add_one_eq_two]
+        simp
+        apply hm
+
+    specialize hsimp (f i₁)
+
+    have le_two : PointMeasure f {f i₁} ≤ 2 := by
+        rcases hsimp with hl | hr
+        exact StrictMono.minimal_preimage_bot (fun ⦃a b⦄ a ↦ a) hl 2
+        rw[hr]
+        exact one_le_two
+
+
+    have eq_two : PointMeasure f {f i₁} = 2 := by
+        apply ge_antisymm
+        apply ge_two
+        apply le_two
+
+    rcases hsimp with hl | _
+    have : PointMeasure f {f i₁} ≠ 2 := by
+        apply ne_of_eq_of_ne hl (by simp)
+    contradiction
+    have : PointMeasure f {f i₁} ≠ 1 := by
+        apply ne_of_eq_of_ne eq_two (by simp)
+    contradiction
